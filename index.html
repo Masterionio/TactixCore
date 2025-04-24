@@ -1,15 +1,11 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<link rel="apple-touch-icon" href="/icon.png">
   <link rel="manifest" href="/manifest.json">
-<link rel="icon" href="/icon.png" type="image/png">
+  <link rel="icon" href="/icon.png" type="image/png">
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>TactixCore</title>
-
-  <!-- Manifest for PWA -->
-  <link rel="manifest" href="manifest.json">
   
   <style>
     body {
@@ -64,6 +60,14 @@
       padding: 0.5rem 1rem;
       font-size: 1rem;
     }
+    fieldset {
+      border: 1px solid #444;
+      padding: 1rem;
+      margin-top: 1rem;
+    }
+    legend {
+      color: #ccc;
+    }
   </style>
 </head>
 <body>
@@ -79,6 +83,21 @@
   <section id="home" class="active">
     <h2>Welcome</h2>
     <p>Your offline gaming companion. Boost focus, time your plays, save tactics, and sharpen reflexes.</p>
+
+    <h3>🎮 Core Booster</h3>
+    <p>Select a performance profile to enhance your gaming experience:</p>
+
+    <fieldset>
+      <legend><strong>Performance Profiles</strong></legend>
+      <label><input type="radio" name="performance" value="ultra"> Ultra Boost</label><br>
+      <label><input type="radio" name="performance" value="high"> High Performance</label><br>
+      <label><input type="radio" name="performance" value="balanced" checked> Balanced</label><br>
+      <label><input type="radio" name="performance" value="efficient"> High Efficiency</label><br>
+      <label><input type="radio" name="performance" value="battery"> Battery Saver</label>
+    </fieldset>
+
+    <button onclick="applyBoost()">Apply Boost</button>
+    <p id="boostStatus" style="margin-top: 1rem;"></p>
   </section>
 
   <section id="timers">
@@ -113,9 +132,7 @@
           });
       });
     }
-  </script>
 
-  <script>
     // Tab switching
     function showTab(id) {
       document.querySelectorAll('section').forEach(s => s.classList.remove('active'));
@@ -172,6 +189,33 @@
       document.getElementById('reactionMsg').textContent = `⏱️ Your reaction time: ${reactionTime} ms`;
       document.getElementById('reactionBtn').textContent = 'Try Again';
       document.getElementById('reactionBtn').onclick = startReactionTest;
+    }
+
+    // Core Booster Logic
+    function applyBoost() {
+      const selectedMode = document.querySelector('input[name="performance"]:checked').value;
+      const status = document.getElementById('boostStatus');
+
+      let msg = `✅ Boost mode "${selectedMode}" applied!`;
+      switch (selectedMode) {
+        case 'ultra':
+          msg += ' Expect max performance and faster battery drain.';
+          break;
+        case 'high':
+          msg += ' Game optimized with smooth and responsive performance.';
+          break;
+        case 'balanced':
+          msg += ' Running light and smooth — great for long sessions.';
+          break;
+        case 'efficient':
+          msg += ' Battery-efficient with stable performance.';
+          break;
+        case 'battery':
+          msg += ' Minimum performance for maximum battery life.';
+          break;
+      }
+
+      status.textContent = msg;
     }
   </script>
 </body>

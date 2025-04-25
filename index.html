@@ -5,8 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>TactixCore</title>
   <link rel="manifest" href="manifest.json">
-  <link rel="icon" href="/icon.png" type="image/png">
-
+  <link rel="icon" href="icon.png" type="image/png">
   <style>
     body {
       font-family: sans-serif;
@@ -43,34 +42,17 @@
     section.active {
       display: block;
     }
-    textarea {
+    textarea, select, input[type="range"] {
       width: 100%;
-      height: 150px;
       margin-top: 1rem;
-      background: #111;
-      color: white;
-      border: 1px solid #444;
-      padding: 0.5rem;
     }
     .timer-display {
       font-size: 2rem;
       margin: 1rem 0;
     }
-    button.timer-btn {
-      padding: 0.5rem 1rem;
-      font-size: 1rem;
-    }
-    select, input[type="range"], input[type="number"] {
-      background: #111;
-      color: white;
-      border: 1px solid #444;
-      padding: 0.3rem;
-      width: 100%;
-      margin-top: 0.5rem;
-    }
-    label {
-      display: block;
-      margin-top: 1rem;
+    .warning {
+      color: red;
+      font-weight: bold;
     }
   </style>
 </head>
@@ -80,21 +62,44 @@
   <nav>
     <button onclick="showTab('home')" class="active">Home</button>
     <button onclick="showTab('timers')">Timers</button>
+    <button onclick="showTab('boost')" >Boost</button>
     <button onclick="showTab('notes')">Notes</button>
     <button onclick="showTab('reaction')">Reaction</button>
-    <button onclick="showTab('performance')">Performance</button>
   </nav>
 
   <section id="home" class="active">
     <h2>Welcome</h2>
-    <p>Your offline gaming companion. Boost focus, time your plays, save tactics, and sharpen reflexes.</p>
+    <p>Your offline gaming companion. Boost performance, clear cache, manage energy, and sharpen your reflexes.</p>
   </section>
 
   <section id="timers">
-    <h2>Timer</h2>
-    <div class="timer-display" id="timerDisplay">00:00</div>
-    <button class="timer-btn" onclick="startTimer()">Start 30s</button>
-    <button class="timer-btn" onclick="resetTimer()">Reset</button>
+    <h2>Game Timer</h2>
+    <label for="timerRange">Set Timer (minutes): <span id="timerLabel">30</span> min</label>
+    <input type="range" id="timerRange" min="1" max="720" value="30" />
+    <div class="timer-display" id="timerDisplay">30:00</div>
+    <button onclick="startTimer()">Start</button>
+    <button onclick="resetTimer()">Reset</button>
+    <audio id="beepSound" src="https://actions.google.com/sounds/v1/alarms/beep_short.ogg" preload="auto"></audio>
+  </section>
+
+  <section id="boost">
+    <h2>Core Booster</h2>
+    <label for="profileSelect">Performance Profile:</label>
+    <select id="profileSelect" onchange="setProfile(this.value)">
+      <option value="none">None (Default)</option>
+      <option value="battery">Battery Saver</option>
+      <option value="efficiency">High Efficiency</option>
+      <option value="balanced">Balanced</option>
+      <option value="high">High Performance</option>
+      <option value="ultra">Ultra Performance</option>
+      <option value="auto">Automatic (AI optimized)</option>
+      <option value="custom">Custom</option>
+    </select>
+    <div id="ultraWarning" class="warning" style="display:none;">
+      ⚠️ Warning: This will drain your battery super fast!
+    </div>
+    <button id="boostButton" style="display:none;" onclick="activateBoost()">Activate Boost</button>
+    <p id="boostStatus"></p>
   </section>
 
   <section id="notes">
@@ -109,38 +114,8 @@
     <button id="reactionBtn" onclick="startReactionTest()">Start</button>
   </section>
 
-  <section id="performance">
-    <h2>Performance Settings</h2>
-    <label for="modeSelect">Choose Mode:</label>
-    <select id="modeSelect" onchange="changePerformanceMode()">
-      <option value="none">None</option>
-      <option value="high">High Performance</option>
-      <option value="balanced">Balanced</option>
-      <option value="efficient">High Efficiency</option>
-      <option value="battery">Battery Saver</option>
-      <option value="auto">Automatic (AI)</option>
-      <option value="custom">Custom</option>
-    </select>
-
-    <div id="customSettings" style="display: none;">
-      <h3>Custom Settings</h3>
-      <label>Graphics Quality:
-        <input type="range" min="1" max="10" value="7" id="graphicsSlider">
-      </label>
-      <label>FPS Boost Level:
-        <input type="range" min="1" max="10" value="8" id="fpsSlider">
-      </label>
-      <label>Cache Clearing Interval (mins):
-        <input type="number" min="1" max="60" value="5" id="cacheInterval">
-      </label>
-      <label>DLSS Level:
-        <input type="range" min="1" max="5" value="3" id="dlssSlider">
-      </label>
-    </div>
-  </section>
-
   <script>
-    // Tab switching
+    // Tab Switching
     function showTab(id) {
       document.querySelectorAll('section').forEach(s => s.classList.remove('active'));
       document.querySelectorAll('nav button').forEach(b => b.classList.remove('active'));
@@ -148,28 +123,44 @@
       event.target.classList.add('active');
     }
 
-    // Timer logic
-    let timer, timeLeft = 30;
+    // Timer Logic
+    const range = document.getElementById('timerRange');
+    const label = document.getElementById('timerLabel');
+    const display = document.getElementById('timerDisplay');
+    const beep = document.getElementById('beepSound');
+    let timer, timeLeft = 1800;
+
+    range.oninput = function () {
+      label.textContent = this.value;
+      timeLeft = this.value * 60;
+      updateTimerDisplay();
+    }
+
     function startTimer() {
       clearInterval(timer);
-      timeLeft = 30;
-      updateTimerDisplay();
       timer = setInterval(() => {
         timeLeft--;
         updateTimerDisplay();
-        if (timeLeft <= 0) clearInterval(timer);
+        if (timeLeft <= 0) {
+          clearInterval(timer);
+          beep.play();
+        }
       }, 1000);
     }
+
     function resetTimer() {
       clearInterval(timer);
-      timeLeft = 0;
+      timeLeft = range.value * 60;
       updateTimerDisplay();
     }
+
     function updateTimerDisplay() {
-      document.getElementById('timerDisplay').textContent = `00:${timeLeft.toString().padStart(2, '0')}`;
+      const minutes = Math.floor(timeLeft / 60).toString().padStart(2, '0');
+      const seconds = (timeLeft % 60).toString().padStart(2, '0');
+      display.textContent = `${minutes}:${seconds}`;
     }
 
-    // Notes logic
+    // Notes
     const notesBox = document.getElementById('notesBox');
     function saveNotes() {
       localStorage.setItem('gameNotes', notesBox.value);
@@ -179,7 +170,7 @@
       notesBox.value = localStorage.getItem('gameNotes') || '';
     });
 
-    // Reaction test logic
+    // Reaction Test
     let reactionStart, reactionTimeout;
     function startReactionTest() {
       document.getElementById('reactionBtn').disabled = true;
@@ -193,44 +184,64 @@
     }
     function stopReactionTest() {
       const reactionTime = Date.now() - reactionStart;
-      document.getElementById('reactionMsg').textContent = `⏱️ Your reaction time: ${reactionTime} ms`;
+      document.getElementById('reactionMsg').textContent = `⏱️ Reaction time: ${reactionTime} ms`;
       document.getElementById('reactionBtn').textContent = 'Try Again';
       document.getElementById('reactionBtn').onclick = startReactionTest;
     }
 
-    // Performance Mode Logic
-    function changePerformanceMode() {
-      const mode = document.getElementById('modeSelect').value;
-      const customSettings = document.getElementById('customSettings');
+    // Booster Logic
+    function setProfile(profile) {
+      document.getElementById('ultraWarning').style.display = (profile === 'ultra') ? 'block' : 'none';
+      document.getElementById('boostButton').style.display = (profile === 'ultra') ? 'inline-block' : 'none';
 
-      if (mode === 'custom') {
-        customSettings.style.display = 'block';
-      } else {
-        customSettings.style.display = 'none';
+      let message = '';
+      switch(profile) {
+        case 'battery':
+          message = 'Battery Saver activated. Low power mode, reduced performance.';
+          break;
+        case 'efficiency':
+          message = 'High Efficiency activated. Saves power, runs smoothly.';
+          break;
+        case 'balanced':
+          message = 'Balanced mode activated. Lightweight with good performance.';
+          break;
+        case 'high':
+          message = 'High Performance activated. Boosted graphics and FPS.';
+          break;
+        case 'ultra':
+          message = 'Ready for Ultra Boost...';
+          break;
+        case 'auto':
+          message = 'Automatic mode enabled. Optimizing every 5 minutes...';
+          autoOptimize();
+          break;
+        case 'custom':
+          message = 'Custom mode. Personalize performance settings.';
+          break;
+        default:
+          message = 'Running on default system performance.';
       }
-
-      console.log(`Switched to ${mode} mode`);
-      if (mode === 'auto') startAutoOptimization();
+      document.getElementById('boostStatus').textContent = message;
     }
 
-    function startAutoOptimization() {
+    function activateBoost() {
+      alert("⚠️ Ultra Boost Active! Max FPS, aggressive cleanup, DLSS+ enhanced. Battery will drain fast!");
+      document.getElementById('boostStatus').textContent = 'Ultra Boost activated. Hold tight!';
+    }
+
+    function autoOptimize() {
       setInterval(() => {
-        const autoModes = ['high', 'balanced', 'efficient', 'battery'];
-        const selected = autoModes[Math.floor(Math.random() * autoModes.length)];
-        console.log(`AI selected mode: ${selected}`);
-      }, 300000); // 5 minutes
+        // Logic could be smarter with metrics (battery %, RAM, etc.)
+        setProfile('balanced');
+      }, 300000); // every 5 minutes
     }
 
     // Service Worker
     if ('serviceWorker' in navigator) {
       window.addEventListener('load', () => {
         navigator.serviceWorker.register('/service-worker.js')
-          .then((registration) => {
-            console.log('Service Worker registered with scope:', registration.scope);
-          })
-          .catch((error) => {
-            console.log('Service Worker registration failed:', error);
-          });
+          .then((reg) => console.log('Service Worker registered:', reg.scope))
+          .catch((err) => console.log('Service Worker failed:', err));
       });
     }
   </script>

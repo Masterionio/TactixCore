@@ -2,174 +2,241 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>TactixCore – Smart Performance Hub</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>TactixCore</title>
   <style>
-    body {
-      font-family: "Segoe UI", sans-serif;
-      padding: 20px;
-      background: #f2f4f8;
-      color: #222;
+    * {box-sizing: border-box; font-family: sans-serif;}
+    body {margin: 0; background: #111; color: #fff;}
+    nav {display: flex; background: #222;}
+    nav button {
+      flex: 1;
+      padding: 1em;
+      border: none;
+      background: #222;
+      color: #ccc;
+      cursor: pointer;
+      font-weight: bold;
     }
-
-    h2, h3 {
-      margin-top: 0;
+    nav button.active {
+      background: #444;
+      color: #fff;
     }
-
-    select, button, input[type="range"] {
-      padding: 8px;
-      font-size: 14px;
-      margin: 6px 0;
-    }
-
-    .slider-container {
-      background: #fff;
-      padding: 12px;
-      border-radius: 12px;
-      margin-bottom: 10px;
-      box-shadow: 0 2px 6px rgba(0,0,0,0.1);
-    }
-
-    label {
-      display: inline-block;
-      margin-bottom: 5px;
-    }
-
-    .reaction-test {
-      margin-top: 30px;
-    }
-
-    #test-area {
-      width: 100%;
-      height: 200px;
-      background: #1c1c1c;
-      position: relative;
-      margin-top: 10px;
-      border-radius: 12px;
-      overflow: hidden;
-    }
-
-    .dot {
-      width: 20px;
-      height: 20px;
-      background: white;
-      border-radius: 0;
-      position: absolute;
+    section {
       display: none;
+      padding: 1em;
     }
-
-    #sliders {
-      margin-top: 15px;
+    section.active {
+      display: block;
+    }
+    input[type=range] {
+      width: 100%;
+    }
+    textarea {
+      width: 100%;
+      height: 150px;
+      background: #222;
+      color: #fff;
+      border: 1px solid #444;
+    }
+    .profile-option {
+      margin: 0.5em 0;
+    }
+    #reactionBtn {
+      background: #333;
+      color: #fff;
+      padding: 1em;
+      font-size: 1.2em;
+      border: none;
+      width: 100%;
+      margin-top: 1em;
     }
   </style>
 </head>
 <body>
+  <nav>
+    <button class="active" onclick="showTab('home')">Home</button>
+    <button onclick="showTab('timers')">Timers</button>
+    <button onclick="showTab('boost')">Boost</button>
+    <button onclick="showTab('notes')">Notes</button>
+    <button onclick="showTab('reaction')">Reaction</button>
+  </nav>
 
-  <h2>TactixCore – Smart Performance Hub</h2>
+  <section id="home" class="active">
+    <h2>Welcome to TactixCore</h2>
+    <p>Optimize your mobile gaming and productivity experience with TactixCore.</p>
+  </section>
 
-  <label for="mode">Select Performance Mode:</label>
-  <select id="mode">
-    <option value="none">None</option>
-    <option value="ultra">Ultra Performance</option>
-    <option value="balanced">Balanced</option>
-    <option value="custom">Custom</option>
-  </select>
+  <section id="timers">
+    <h2>Custom Timer</h2>
+    <label for="timerRange">Duration (minutes): <span id="timerLabel">30</span></label>
+    <input type="range" id="timerRange" min="1" max="720" value="30">
+    <div id="timerDisplay">30:00</div>
+    <button onclick="startTimer()">Start</button>
+    <button onclick="resetTimer()">Reset</button>
+    <audio id="beepSound" src="https://actions.google.com/sounds/v1/alarms/beep_short.ogg"></audio>
+  </section>
 
-  <div id="sliders"></div>
+  <section id="boost">
+    <h2>Core Booster</h2>
+    <div class="profile-option"><button onclick="setProfile('battery')">Battery Saver</button></div>
+    <div class="profile-option"><button onclick="setProfile('efficiency')">High Efficiency</button></div>
+    <div class="profile-option"><button onclick="setProfile('balanced')">Balanced</button></div>
+    <div class="profile-option"><button onclick="setProfile('high')">High Performance</button></div>
+    <div class="profile-option"><button onclick="setProfile('ultra')">Ultra Performance</button></div>
+    <div class="profile-option"><button onclick="setProfile('auto')">Automatic</button></div>
+    <div class="profile-option"><button onclick="setProfile('custom')">Custom</button></div>
+    <p id="boostStatus">Select a profile to optimize.</p>
+    <div id="ultraWarning" style="display:none; color: orange;">⚠️ Ultra Mode drains battery quickly!</div>
+    <button id="boostButton" style="display:none;" onclick="activateBoost()">Activate Boost</button>
+  </section>
 
-  <div class="reaction-test">
-    <h3>Reaction Test</h3>
-    <button onclick="startReactionTest()">Start Test</button>
-    <div id="test-area">
-      <div id="dot" class="dot"></div>
-    </div>
-  </div>
+  <section id="notes">
+    <h2>Notes</h2>
+    <textarea id="notesBox" placeholder="Write your notes here..."></textarea>
+    <button onclick="saveNotes()">Save</button>
+  </section>
+
+  <section id="reaction">
+    <h2>Reaction Time Test</h2>
+    <p id="reactionMsg">Click the button and wait...</p>
+    <button id="reactionBtn" onclick="startReactionTest()">Start</button>
+  </section>
 
   <script>
-    const slidersContainer = document.getElementById("sliders");
-    const modeSelect = document.getElementById("mode");
+    // Tab Switching
+    function showTab(id) {
+      document.querySelectorAll('section').forEach(s => s.classList.remove('active'));
+      document.querySelectorAll('nav button').forEach(b => b.classList.remove('active'));
+      document.getElementById(id).classList.add('active');
+      event.target.classList.add('active');
 
-    const customSettings = {
-      fps: 60,
-      cache: 2,
-      dlss: 1
-    };
-
-    function renderSliders(profile) {
-      slidersContainer.innerHTML = "";
-
-      if (profile === "custom") {
-        createSlider("fps", "FPS Boost", customSettings.fps, 30, 120);
-        createSlider("cache", "Cache Clear Level", customSettings.cache, 0, 5);
-        createSlider("dlss", "DLSS Lite Level", customSettings.dlss, 0, 3);
-      } else if (profile === "ultra") {
-        createSlider("fps", "FPS Boost", 120, 30, 120);
-        createSlider("cache", "Cache Clear Level", 5, 0, 5);
-        createSlider("dlss", "DLSS Lite Level", 3, 0, 3);
-      } else if (profile === "balanced") {
-        createSlider("fps", "FPS Boost", 60, 30, 120);
-        createSlider("cache", "Cache Clear Level", 2, 0, 5);
-        createSlider("dlss", "DLSS Lite Level", 1, 0, 3);
-      }
-      // None mode shows no sliders
-    }
-
-    function createSlider(id, label, value, min, max) {
-      const wrapper = document.createElement("div");
-      wrapper.className = "slider-container";
-
-      const labelEl = document.createElement("label");
-      labelEl.textContent = `${label}: `;
-      labelEl.setAttribute("for", id);
-
-      const input = document.createElement("input");
-      input.type = "range";
-      input.id = id;
-      input.min = min;
-      input.max = max;
-      input.value = value;
-
-      const valueSpan = document.createElement("span");
-      valueSpan.id = `${id}-value`;
-      valueSpan.textContent = value;
-
-      input.addEventListener("input", () => {
-        valueSpan.textContent = input.value;
-        if (modeSelect.value === "custom") {
-          customSettings[id] = parseInt(input.value);
-        }
+      // Force redraw of sliders (fix disappearing issue)
+      const sliders = document.querySelectorAll('input[type="range"]');
+      sliders.forEach(slider => {
+        slider.style.display = 'none';
+        void slider.offsetWidth;
+        slider.style.display = '';
       });
-
-      wrapper.appendChild(labelEl);
-      wrapper.appendChild(input);
-      wrapper.appendChild(valueSpan);
-
-      slidersContainer.appendChild(wrapper);
     }
 
-    modeSelect.addEventListener("change", () => {
-      renderSliders(modeSelect.value);
+    // Timer Logic
+    const range = document.getElementById('timerRange');
+    const label = document.getElementById('timerLabel');
+    const display = document.getElementById('timerDisplay');
+    const beep = document.getElementById('beepSound');
+    let timer, timeLeft = 1800;
+
+    range.oninput = function () {
+      label.textContent = this.value;
+      timeLeft = this.value * 60;
+      updateTimerDisplay();
+    }
+
+    function startTimer() {
+      clearInterval(timer);
+      timer = setInterval(() => {
+        timeLeft--;
+        updateTimerDisplay();
+        if (timeLeft <= 0) {
+          clearInterval(timer);
+          beep.play();
+        }
+      }, 1000);
+    }
+
+    function resetTimer() {
+      clearInterval(timer);
+      timeLeft = range.value * 60;
+      updateTimerDisplay();
+    }
+
+    function updateTimerDisplay() {
+      const minutes = Math.floor(timeLeft / 60).toString().padStart(2, '0');
+      const seconds = (timeLeft % 60).toString().padStart(2, '0');
+      display.textContent = `${minutes}:${seconds}`;
+    }
+
+    // Notes
+    const notesBox = document.getElementById('notesBox');
+    function saveNotes() {
+      localStorage.setItem('gameNotes', notesBox.value);
+      alert('Notes saved!');
+    }
+    window.addEventListener('load', () => {
+      notesBox.value = localStorage.getItem('gameNotes') || '';
     });
 
-    renderSliders(modeSelect.value); // Initial render
-
+    // Reaction Test
+    let reactionStart, reactionTimeout;
     function startReactionTest() {
-      const dot = document.getElementById("dot");
-      dot.style.display = "none";
+      document.getElementById('reactionBtn').disabled = true;
+      document.getElementById('reactionMsg').textContent = 'Wait for it...';
+      document.getElementById('reactionBtn').textContent = '';
+      document.getElementById('reactionBtn').style.background = '#fff';
 
-      const testArea = document.getElementById("test-area");
-      const maxX = testArea.clientWidth - 20;
-      const maxY = testArea.clientHeight - 20;
+      reactionTimeout = setTimeout(() => {
+        reactionStart = Date.now();
+        document.getElementById('reactionMsg').textContent = 'TAP NOW!';
+        document.getElementById('reactionBtn').disabled = false;
+        document.getElementById('reactionBtn').onclick = stopReactionTest;
+      }, 2000 + Math.random() * 3000);
+    }
 
-      const x = Math.random() * maxX;
-      const y = Math.random() * maxY;
+    function stopReactionTest() {
+      const reactionTime = Date.now() - reactionStart;
+      document.getElementById('reactionMsg').textContent = `⏱️ Reaction time: ${reactionTime} ms`;
+      document.getElementById('reactionBtn').textContent = 'Try Again';
+      document.getElementById('reactionBtn').style.background = '';
+      document.getElementById('reactionBtn').onclick = startReactionTest;
+    }
 
-      setTimeout(() => {
-        dot.style.left = `${x}px`;
-        dot.style.top = `${y}px`;
-        dot.style.display = "block";
-      }, 1000 + Math.random() * 2000);
+    // Booster
+    function setProfile(profile) {
+      document.getElementById('ultraWarning').style.display = (profile === 'ultra') ? 'block' : 'none';
+      document.getElementById('boostButton').style.display = (profile === 'ultra') ? 'inline-block' : 'none';
+
+      let message = '';
+      switch(profile) {
+        case 'battery':
+          message = 'Battery Saver activated. Low power mode, reduced performance.'; break;
+        case 'efficiency':
+          message = 'High Efficiency activated. Saves power, runs smoothly.'; break;
+        case 'balanced':
+          message = 'Balanced mode activated. Lightweight with good performance.'; break;
+        case 'high':
+          message = 'High Performance activated. Boosted graphics and FPS.'; break;
+        case 'ultra':
+          message = 'Ready for Ultra Boost...'; break;
+        case 'auto':
+          message = 'Automatic mode enabled. Optimizing every 5 minutes...';
+          autoOptimize(); break;
+        case 'custom':
+          message = 'Custom mode. Personalize performance settings.'; break;
+        default:
+          message = 'Running on default system performance.';
+      }
+      document.getElementById('boostStatus').textContent = message;
+    }
+
+    function activateBoost() {
+      alert("⚠️ Ultra Boost Active! Max FPS, aggressive cleanup, DLSS+ enhanced. Battery will drain fast!");
+      document.getElementById('boostStatus').textContent = 'Ultra Boost activated. Hold tight!';
+    }
+
+    function autoOptimize() {
+      setInterval(() => {
+        setProfile('balanced');
+      }, 300000);
+    }
+
+    // Service Worker
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('/service-worker.js')
+          .then((reg) => console.log('Service Worker registered:', reg.scope))
+          .catch((err) => console.log('Service Worker failed:', err));
+      });
     }
   </script>
-
 </body>
 </html>

@@ -54,13 +54,21 @@
       color: red;
       font-weight: bold;
     }
+    #notesBox {
+      height: 200px;
+      background: black;
+      color: white;
+      padding: 1rem;
+      font-size: 1rem;
+    }
     #reactionDot {
       position: absolute;
       width: 50px;
       height: 50px;
-      background-color: white;
-      border-radius: 50%;
+      background: white;
+      border-radius: 12px;
       display: none;
+      z-index: 9999;
     }
   </style>
 </head>
@@ -70,7 +78,7 @@
   <nav>
     <button onclick="showTab('home')" class="active">Home</button>
     <button onclick="showTab('timers')">Timers</button>
-    <button onclick="showTab('boost')" >Boost</button>
+    <button onclick="showTab('boost')">Boost</button>
     <button onclick="showTab('notes')">Notes</button>
     <button onclick="showTab('reaction')">Reaction</button>
   </nav>
@@ -101,7 +109,6 @@
       <option value="high">High Performance</option>
       <option value="ultra">Ultra Performance</option>
       <option value="auto">Automatic (AI optimized)</option>
-      <option value="custom">Custom</option>
     </select>
     <div id="ultraWarning" class="warning" style="display:none;">
       ⚠️ Warning: This will drain your battery super fast!
@@ -120,7 +127,7 @@
     <h2>Reaction Test</h2>
     <p id="reactionMsg">Tap to start!</p>
     <button id="reactionBtn" onclick="startReactionTest()">Start</button>
-    <div id="reactionDot"></div>
+    <div id="reactionDot" onclick="stopReactionTest()"></div>
   </section>
 
   <script>
@@ -179,36 +186,31 @@
       notesBox.value = localStorage.getItem('gameNotes') || '';
     });
 
-    // Reaction Test
+    // Reaction Test with Dot
+    const dot = document.getElementById('reactionDot');
     let reactionStart, reactionTimeout;
+
     function startReactionTest() {
-      document.getElementById('reactionBtn').disabled = true;
       document.getElementById('reactionMsg').textContent = 'Wait for it...';
+      document.getElementById('reactionBtn').disabled = true;
+      dot.style.display = 'none';
+
       reactionTimeout = setTimeout(() => {
-        reactionStart = Date.now();
-        document.getElementById('reactionMsg').textContent = 'TAP NOW!';
-        document.getElementById('reactionBtn').disabled = false;
-        document.getElementById('reactionBtn').onclick = stopReactionTest;
-
-        // Randomize the position of the white dot
-        const dot = document.getElementById('reactionDot');
-        const maxX = window.innerWidth - 50;
-        const maxY = window.innerHeight - 50;
-        const randomX = Math.floor(Math.random() * maxX);
-        const randomY = Math.floor(Math.random() * maxY);
-
-        dot.style.left = `${randomX}px`;
-        dot.style.top = `${randomY}px`;
+        const x = Math.random() * (window.innerWidth - 60);
+        const y = Math.random() * (window.innerHeight - 60);
+        dot.style.left = `${x}px`;
+        dot.style.top = `${y}px`;
         dot.style.display = 'block';
+        reactionStart = Date.now();
       }, 2000 + Math.random() * 3000);
     }
 
     function stopReactionTest() {
       const reactionTime = Date.now() - reactionStart;
+      dot.style.display = 'none';
       document.getElementById('reactionMsg').textContent = `⏱️ Reaction time: ${reactionTime} ms`;
       document.getElementById('reactionBtn').textContent = 'Try Again';
-      document.getElementById('reactionBtn').onclick = startReactionTest;
-      document.getElementById('reactionDot').style.display = 'none';
+      document.getElementById('reactionBtn').disabled = false;
     }
 
     // Booster Logic
@@ -237,9 +239,6 @@
           message = 'Automatic mode enabled. Optimizing every 5 minutes...';
           autoOptimize();
           break;
-        case 'custom':
-          message = 'Custom mode. Personalize performance settings.';
-          break;
         default:
           message = 'Running on default system performance.';
       }
@@ -253,9 +252,17 @@
 
     function autoOptimize() {
       setInterval(() => {
-        // Logic could be smarter with metrics (battery %, RAM, etc.)
         setProfile('balanced');
       }, 300000); // every 5 minutes
+    }
+
+    // Service Worker
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('/service-worker.js')
+          .then((reg) => console.log('Service Worker registered:', reg.scope))
+          .catch((err) => console.log('Service Worker failed:', err));
+      });
     }
   </script>
 </body>

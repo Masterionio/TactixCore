@@ -1,143 +1,148 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>TactixCore</title>
   <style>
-    * {box-sizing: border-box; font-family: sans-serif;}
-    body {margin: 0; background: #111; color: #fff;}
-    nav {display: flex; background: #222;}
-    nav button {
-      flex: 1;
-      padding: 1em;
-      border: none;
+    body {
+      margin: 0;
+      background: #111;
+      font-family: Arial, sans-serif;
+      color: #fff;
+    }
+    header, nav {
       background: #222;
-      color: #ccc;
-      cursor: pointer;
-      font-weight: bold;
+      padding: 1rem;
+      text-align: center;
+    }
+    nav button {
+      background: transparent;
+      border: none;
+      color: white;
+      padding: 1rem;
+      font-size: 1rem;
     }
     nav button.active {
       background: #444;
-      color: #fff;
     }
     section {
       display: none;
-      padding: 1em;
+      padding: 1rem;
     }
     section.active {
       display: block;
     }
-    input[type=range] {
+    input[type="range"] {
       width: 100%;
+      margin-top: 10px;
     }
-    textarea {
+    select, textarea {
       width: 100%;
-      height: 150px;
-      background: #222;
-      color: #fff;
-      border: 1px solid #444;
+      margin-top: 10px;
     }
-    .profile-option {
-      margin: 0.5em 0;
-    }
-    #reactionBtn {
-      background: #333;
-      color: #fff;
-      padding: 1em;
-      font-size: 1.2em;
-      border: none;
-      width: 100%;
-      margin-top: 1em;
+    .white-dot {
+      width: 40px;
+      height: 40px;
+      background: white;
+      border-radius: 0;
+      margin: 20px auto;
+      display: none;
     }
   </style>
 </head>
 <body>
+  <header><h1>TactixCore</h1></header>
+
   <nav>
-    <button class="active" onclick="showTab('home')">Home</button>
-    <button onclick="showTab('timers')">Timers</button>
-    <button onclick="showTab('boost')">Boost</button>
-    <button onclick="showTab('notes')">Notes</button>
-    <button onclick="showTab('reaction')">Reaction</button>
+    <button onclick="switchTab('home')" class="active">Home</button>
+    <button onclick="switchTab('timers')">Timers</button>
+    <button onclick="switchTab('boost')">Boost</button>
+    <button onclick="switchTab('notes')">Notes</button>
+    <button onclick="switchTab('reaction')">Reaction</button>
   </nav>
 
   <section id="home" class="active">
-    <h2>Welcome to TactixCore</h2>
-    <p>Optimize your mobile gaming and productivity experience with TactixCore.</p>
+    <p>Welcome to your offline gaming performance hub.</p>
   </section>
 
   <section id="timers">
-    <h2>Custom Timer</h2>
-    <label for="timerRange">Duration (minutes): <span id="timerLabel">30</span></label>
+    <h2>Game Timer</h2>
+    <label for="timerRange">Minutes: <span id="timerLabel">30</span></label>
     <input type="range" id="timerRange" min="1" max="720" value="30">
     <div id="timerDisplay">30:00</div>
     <button onclick="startTimer()">Start</button>
     <button onclick="resetTimer()">Reset</button>
-    <audio id="beepSound" src="https://actions.google.com/sounds/v1/alarms/beep_short.ogg"></audio>
+    <audio id="beep" src="https://actions.google.com/sounds/v1/alarms/beep_short.ogg"></audio>
   </section>
 
   <section id="boost">
-    <h2>Core Booster</h2>
-    <div class="profile-option"><button onclick="setProfile('battery')">Battery Saver</button></div>
-    <div class="profile-option"><button onclick="setProfile('efficiency')">High Efficiency</button></div>
-    <div class="profile-option"><button onclick="setProfile('balanced')">Balanced</button></div>
-    <div class="profile-option"><button onclick="setProfile('high')">High Performance</button></div>
-    <div class="profile-option"><button onclick="setProfile('ultra')">Ultra Performance</button></div>
-    <div class="profile-option"><button onclick="setProfile('auto')">Automatic</button></div>
-    <div class="profile-option"><button onclick="setProfile('custom')">Custom</button></div>
-    <p id="boostStatus">Select a profile to optimize.</p>
-    <div id="ultraWarning" style="display:none; color: orange;">⚠️ Ultra Mode drains battery quickly!</div>
-    <button id="boostButton" style="display:none;" onclick="activateBoost()">Activate Boost</button>
+    <h2>Performance Mode</h2>
+    <select id="profileSelect" onchange="setProfile(this.value)">
+      <option value="none">None (Default)</option>
+      <option value="battery">Battery Saver</option>
+      <option value="efficiency">High Efficiency</option>
+      <option value="balanced">Balanced</option>
+      <option value="high">High Performance</option>
+      <option value="ultra">Ultra Performance</option>
+      <option value="auto">Automatic</option>
+      <option value="custom">Custom</option>
+    </select>
+    <div id="ultraWarning" style="color: red; display: none;">
+      ⚠️ Ultra mode drains battery fast.
+    </div>
+    <button id="boostBtn" style="display: none;" onclick="activateBoost()">Activate Boost</button>
+    <div id="boostStatus"></div>
   </section>
 
   <section id="notes">
     <h2>Notes</h2>
-    <textarea id="notesBox" placeholder="Write your notes here..."></textarea>
+    <textarea id="notesBox" rows="6" placeholder="Write here..."></textarea>
     <button onclick="saveNotes()">Save</button>
   </section>
 
   <section id="reaction">
-    <h2>Reaction Time Test</h2>
-    <p id="reactionMsg">Click the button and wait...</p>
-    <button id="reactionBtn" onclick="startReactionTest()">Start</button>
+    <h2>Reaction Test</h2>
+    <div id="reactionArea">
+      <p id="reactionMsg">Tap to start.</p>
+      <div class="white-dot" id="dot"></div>
+      <button id="reactionBtn" onclick="startReaction()">Start</button>
+    </div>
   </section>
 
   <script>
-    // Tab Switching
-    function showTab(id) {
-      document.querySelectorAll('section').forEach(s => s.classList.remove('active'));
-      document.querySelectorAll('nav button').forEach(b => b.classList.remove('active'));
-      document.getElementById(id).classList.add('active');
-      event.target.classList.add('active');
-
-      // Force redraw of sliders (fix disappearing issue)
-      const sliders = document.querySelectorAll('input[type="range"]');
-      sliders.forEach(slider => {
-        slider.style.display = 'none';
-        void slider.offsetWidth;
-        slider.style.display = '';
-      });
+    function switchTab(tab) {
+      document.querySelectorAll("section").forEach(s => s.classList.remove("active"));
+      document.querySelectorAll("nav button").forEach(b => b.classList.remove("active"));
+      document.getElementById(tab).classList.add("active");
+      event.target.classList.add("active");
     }
 
-    // Timer Logic
-    const range = document.getElementById('timerRange');
-    const label = document.getElementById('timerLabel');
-    const display = document.getElementById('timerDisplay');
-    const beep = document.getElementById('beepSound');
-    let timer, timeLeft = 1800;
+    // Timer
+    let timer, secondsLeft = 1800;
+    const range = document.getElementById("timerRange");
+    const label = document.getElementById("timerLabel");
+    const display = document.getElementById("timerDisplay");
+    const beep = document.getElementById("beep");
 
-    range.oninput = function () {
-      label.textContent = this.value;
-      timeLeft = this.value * 60;
+    range.oninput = () => {
+      label.textContent = range.value;
+      secondsLeft = range.value * 60;
       updateTimerDisplay();
+    };
+
+    function updateTimerDisplay() {
+      const m = String(Math.floor(secondsLeft / 60)).padStart(2, "0");
+      const s = String(secondsLeft % 60).padStart(2, "0");
+      display.textContent = `${m}:${s}`;
     }
 
     function startTimer() {
       clearInterval(timer);
       timer = setInterval(() => {
-        timeLeft--;
+        secondsLeft--;
         updateTimerDisplay();
-        if (timeLeft <= 0) {
+        if (secondsLeft <= 0) {
           clearInterval(timer);
           beep.play();
         }
@@ -146,96 +151,73 @@
 
     function resetTimer() {
       clearInterval(timer);
-      timeLeft = range.value * 60;
+      secondsLeft = range.value * 60;
       updateTimerDisplay();
     }
 
-    function updateTimerDisplay() {
-      const minutes = Math.floor(timeLeft / 60).toString().padStart(2, '0');
-      const seconds = (timeLeft % 60).toString().padStart(2, '0');
-      display.textContent = `${minutes}:${seconds}`;
-    }
-
     // Notes
-    const notesBox = document.getElementById('notesBox');
+    const notesBox = document.getElementById("notesBox");
     function saveNotes() {
-      localStorage.setItem('gameNotes', notesBox.value);
-      alert('Notes saved!');
+      localStorage.setItem("tactixNotes", notesBox.value);
+      alert("Saved!");
     }
-    window.addEventListener('load', () => {
-      notesBox.value = localStorage.getItem('gameNotes') || '';
+    window.addEventListener("load", () => {
+      notesBox.value = localStorage.getItem("tactixNotes") || "";
     });
 
-    // Reaction Test
-    let reactionStart, reactionTimeout;
-    function startReactionTest() {
-      document.getElementById('reactionBtn').disabled = true;
-      document.getElementById('reactionMsg').textContent = 'Wait for it...';
-      document.getElementById('reactionBtn').textContent = '';
-      document.getElementById('reactionBtn').style.background = '#fff';
-
-      reactionTimeout = setTimeout(() => {
-        reactionStart = Date.now();
-        document.getElementById('reactionMsg').textContent = 'TAP NOW!';
-        document.getElementById('reactionBtn').disabled = false;
-        document.getElementById('reactionBtn').onclick = stopReactionTest;
-      }, 2000 + Math.random() * 3000);
-    }
-
-    function stopReactionTest() {
-      const reactionTime = Date.now() - reactionStart;
-      document.getElementById('reactionMsg').textContent = `⏱️ Reaction time: ${reactionTime} ms`;
-      document.getElementById('reactionBtn').textContent = 'Try Again';
-      document.getElementById('reactionBtn').style.background = '';
-      document.getElementById('reactionBtn').onclick = startReactionTest;
-    }
-
-    // Booster
+    // Boost
     function setProfile(profile) {
-      document.getElementById('ultraWarning').style.display = (profile === 'ultra') ? 'block' : 'none';
-      document.getElementById('boostButton').style.display = (profile === 'ultra') ? 'inline-block' : 'none';
+      const warning = document.getElementById("ultraWarning");
+      const btn = document.getElementById("boostBtn");
+      const msg = document.getElementById("boostStatus");
 
-      let message = '';
-      switch(profile) {
-        case 'battery':
-          message = 'Battery Saver activated. Low power mode, reduced performance.'; break;
-        case 'efficiency':
-          message = 'High Efficiency activated. Saves power, runs smoothly.'; break;
-        case 'balanced':
-          message = 'Balanced mode activated. Lightweight with good performance.'; break;
-        case 'high':
-          message = 'High Performance activated. Boosted graphics and FPS.'; break;
-        case 'ultra':
-          message = 'Ready for Ultra Boost...'; break;
-        case 'auto':
-          message = 'Automatic mode enabled. Optimizing every 5 minutes...';
-          autoOptimize(); break;
-        case 'custom':
-          message = 'Custom mode. Personalize performance settings.'; break;
-        default:
-          message = 'Running on default system performance.';
-      }
-      document.getElementById('boostStatus').textContent = message;
+      warning.style.display = (profile === "ultra") ? "block" : "none";
+      btn.style.display = (profile === "ultra") ? "inline-block" : "none";
+
+      const messages = {
+        none: "Default system mode.",
+        battery: "Battery Saver enabled.",
+        efficiency: "Efficiency mode enabled.",
+        balanced: "Balanced performance.",
+        high: "High performance mode on.",
+        ultra: "Ready for Ultra Boost.",
+        auto: "Auto-optimizing every 5 min.",
+        custom: "Customize your own profile."
+      };
+      msg.textContent = messages[profile] || "";
     }
 
     function activateBoost() {
-      alert("⚠️ Ultra Boost Active! Max FPS, aggressive cleanup, DLSS+ enhanced. Battery will drain fast!");
-      document.getElementById('boostStatus').textContent = 'Ultra Boost activated. Hold tight!';
+      alert("⚠️ Ultra Boost is now active!");
+      document.getElementById("boostStatus").textContent = "Ultra Boost activated.";
     }
 
-    function autoOptimize() {
-      setInterval(() => {
-        setProfile('balanced');
-      }, 300000);
+    // Reaction Test
+    let reactionStart = 0;
+    let timeoutID = null;
+    const dot = document.getElementById("dot");
+    const msg = document.getElementById("reactionMsg");
+    const btn = document.getElementById("reactionBtn");
+
+    function startReaction() {
+      dot.style.display = "none";
+      btn.disabled = true;
+      msg.textContent = "Wait for it...";
+
+      timeoutID = setTimeout(() => {
+        dot.style.display = "block";
+        msg.textContent = "Tap the dot!";
+        reactionStart = Date.now();
+        dot.onclick = stopReaction;
+      }, 1500 + Math.random() * 2000);
     }
 
-    // Service Worker
-    if ('serviceWorker' in navigator) {
-      window.addEventListener('load', () => {
-        navigator.serviceWorker.register('/service-worker.js')
-          .then((reg) => console.log('Service Worker registered:', reg.scope))
-          .catch((err) => console.log('Service Worker failed:', err));
-      });
+    function stopReaction() {
+      const reactionTime = Date.now() - reactionStart;
+      msg.textContent = `⏱️ ${reactionTime} ms`;
+      dot.style.display = "none";
+      btn.disabled = false;
+      btn.textContent = "Try Again";
     }
   </script>
 </body>

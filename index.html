@@ -1,12 +1,12 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <link rel="manifest" href="/manifest.json">
-  <link rel="icon" href="/icon.png" type="image/png">
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>TactixCore</title>
-  
+  <link rel="manifest" href="manifest.json">
+  <link rel="icon" href="/icon.png" type="image/png">
+
   <style>
     body {
       font-family: sans-serif;
@@ -60,13 +60,17 @@
       padding: 0.5rem 1rem;
       font-size: 1rem;
     }
-    fieldset {
+    select, input[type="range"], input[type="number"] {
+      background: #111;
+      color: white;
       border: 1px solid #444;
-      padding: 1rem;
-      margin-top: 1rem;
+      padding: 0.3rem;
+      width: 100%;
+      margin-top: 0.5rem;
     }
-    legend {
-      color: #ccc;
+    label {
+      display: block;
+      margin-top: 1rem;
     }
   </style>
 </head>
@@ -78,26 +82,12 @@
     <button onclick="showTab('timers')">Timers</button>
     <button onclick="showTab('notes')">Notes</button>
     <button onclick="showTab('reaction')">Reaction</button>
+    <button onclick="showTab('performance')">Performance</button>
   </nav>
 
   <section id="home" class="active">
     <h2>Welcome</h2>
     <p>Your offline gaming companion. Boost focus, time your plays, save tactics, and sharpen reflexes.</p>
-
-    <h3>🎮 Core Booster</h3>
-    <p>Select a performance profile to enhance your gaming experience:</p>
-
-    <fieldset>
-      <legend><strong>Performance Profiles</strong></legend>
-      <label><input type="radio" name="performance" value="ultra"> Ultra Boost</label><br>
-      <label><input type="radio" name="performance" value="high"> High Performance</label><br>
-      <label><input type="radio" name="performance" value="balanced" checked> Balanced</label><br>
-      <label><input type="radio" name="performance" value="efficient"> High Efficiency</label><br>
-      <label><input type="radio" name="performance" value="battery"> Battery Saver</label>
-    </fieldset>
-
-    <button onclick="applyBoost()">Apply Boost</button>
-    <p id="boostStatus" style="margin-top: 1rem;"></p>
   </section>
 
   <section id="timers">
@@ -119,20 +109,37 @@
     <button id="reactionBtn" onclick="startReactionTest()">Start</button>
   </section>
 
-  <!-- Service Worker Registration -->
-  <script>
-    if ('serviceWorker' in navigator) {
-      window.addEventListener('load', () => {
-        navigator.serviceWorker.register('/service-worker.js')
-          .then((registration) => {
-            console.log('Service Worker registered with scope:', registration.scope);
-          })
-          .catch((error) => {
-            console.log('Service Worker registration failed:', error);
-          });
-      });
-    }
+  <section id="performance">
+    <h2>Performance Settings</h2>
+    <label for="modeSelect">Choose Mode:</label>
+    <select id="modeSelect" onchange="changePerformanceMode()">
+      <option value="none">None</option>
+      <option value="high">High Performance</option>
+      <option value="balanced">Balanced</option>
+      <option value="efficient">High Efficiency</option>
+      <option value="battery">Battery Saver</option>
+      <option value="auto">Automatic (AI)</option>
+      <option value="custom">Custom</option>
+    </select>
 
+    <div id="customSettings" style="display: none;">
+      <h3>Custom Settings</h3>
+      <label>Graphics Quality:
+        <input type="range" min="1" max="10" value="7" id="graphicsSlider">
+      </label>
+      <label>FPS Boost Level:
+        <input type="range" min="1" max="10" value="8" id="fpsSlider">
+      </label>
+      <label>Cache Clearing Interval (mins):
+        <input type="number" min="1" max="60" value="5" id="cacheInterval">
+      </label>
+      <label>DLSS Level:
+        <input type="range" min="1" max="5" value="3" id="dlssSlider">
+      </label>
+    </div>
+  </section>
+
+  <script>
     // Tab switching
     function showTab(id) {
       document.querySelectorAll('section').forEach(s => s.classList.remove('active'));
@@ -191,31 +198,40 @@
       document.getElementById('reactionBtn').onclick = startReactionTest;
     }
 
-    // Core Booster Logic
-    function applyBoost() {
-      const selectedMode = document.querySelector('input[name="performance"]:checked').value;
-      const status = document.getElementById('boostStatus');
+    // Performance Mode Logic
+    function changePerformanceMode() {
+      const mode = document.getElementById('modeSelect').value;
+      const customSettings = document.getElementById('customSettings');
 
-      let msg = `✅ Boost mode "${selectedMode}" applied!`;
-      switch (selectedMode) {
-        case 'ultra':
-          msg += ' Expect max performance and faster battery drain.';
-          break;
-        case 'high':
-          msg += ' Game optimized with smooth and responsive performance.';
-          break;
-        case 'balanced':
-          msg += ' Running light and smooth — great for long sessions.';
-          break;
-        case 'efficient':
-          msg += ' Battery-efficient with stable performance.';
-          break;
-        case 'battery':
-          msg += ' Minimum performance for maximum battery life.';
-          break;
+      if (mode === 'custom') {
+        customSettings.style.display = 'block';
+      } else {
+        customSettings.style.display = 'none';
       }
 
-      status.textContent = msg;
+      console.log(`Switched to ${mode} mode`);
+      if (mode === 'auto') startAutoOptimization();
+    }
+
+    function startAutoOptimization() {
+      setInterval(() => {
+        const autoModes = ['high', 'balanced', 'efficient', 'battery'];
+        const selected = autoModes[Math.floor(Math.random() * autoModes.length)];
+        console.log(`AI selected mode: ${selected}`);
+      }, 300000); // 5 minutes
+    }
+
+    // Service Worker
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('/service-worker.js')
+          .then((registration) => {
+            console.log('Service Worker registered with scope:', registration.scope);
+          })
+          .catch((error) => {
+            console.log('Service Worker registration failed:', error);
+          });
+      });
     }
   </script>
 </body>

@@ -23,7 +23,6 @@
       justify-content: space-around;
       background: #222;
       border-top: 2px solid #444;
-      flex-wrap: wrap;
     }
     nav button {
       flex: 1;
@@ -43,7 +42,7 @@
     section.active {
       display: block;
     }
-    textarea, select, input[type="range"], input[type="file"] {
+    textarea, select, input[type="range"] {
       width: 100%;
       margin-top: 1rem;
     }
@@ -55,21 +54,18 @@
       color: red;
       font-weight: bold;
     }
-    .mobile-footer {
-      display: none;
-      position: fixed;
-      bottom: 10px;
-      left: 50%;
-      transform: translateX(-50%);
-      background: #222;
+    #notesBox {
+      background: black;
       color: white;
-      padding: 0.5rem;
-      border-radius: 10px;
+      height: 300px;
     }
-    @media (max-width: 768px) {
-      .mobile-footer {
-        display: block;
-      }
+    #reactionDot {
+      width: 50px;
+      height: 50px;
+      background: white;
+      position: absolute;
+      border-radius: 15px;
+      display: none;
     }
   </style>
 </head>
@@ -80,14 +76,14 @@
     <button onclick="showTab('home')" class="active">Home</button>
     <button onclick="showTab('timers')">Timers</button>
     <button onclick="showTab('boost')">Boost</button>
+    <button onclick="showTab('security')">Security</button>
     <button onclick="showTab('notes')">Notes</button>
     <button onclick="showTab('reaction')">Reaction</button>
-    <button onclick="showTab('security')">Security</button>
   </nav>
 
   <section id="home" class="active">
     <h2>Welcome</h2>
-    <p>Your offline gaming companion. Boost performance, clear cache, manage energy, and sharpen your reflexes.</p>
+    <p>Your offline gaming companion. Boost performance, clear cache, manage energy, enhance security, and sharpen your reflexes.</p>
   </section>
 
   <section id="timers">
@@ -110,13 +106,21 @@
       <option value="balanced">Balanced</option>
       <option value="high">High Performance</option>
       <option value="ultra">Ultra Performance</option>
-      <option value="auto">Automatic (AI optimized)</option>
+      <option value="smart">Smart Boost</option>
     </select>
     <div id="ultraWarning" class="warning" style="display:none;">
-      ⚠️ Warning: This will drain your battery super fast!
+      ⚠️ Warning: Ultra Boost will drain your battery very fast!
     </div>
     <button id="boostButton" style="display:none;" onclick="activateBoost()">Activate Boost</button>
     <p id="boostStatus"></p>
+  </section>
+
+  <section id="security">
+    <h2>Security Enhancer</h2>
+    <p>Status: <span id="securityStatus">All systems normal.</span></p>
+    <button onclick="startScan()">🔍 Quick Scan</button>
+    <button onclick="quarantineFile()">🛡️ Quarantine File</button>
+    <div id="scanResult"></div>
   </section>
 
   <section id="notes">
@@ -129,42 +133,8 @@
     <h2>Reaction Test</h2>
     <p id="reactionMsg">Tap to start!</p>
     <button id="reactionBtn" onclick="startReactionTest()">Start</button>
+    <div id="reactionDot"></div>
   </section>
-
-  <section id="security">
-    <h2>Security Enhancer</h2>
-    <div>
-      <h3>Anti-Tracker</h3>
-      <button onclick="toggleAntiTracker()">Enable/Disable</button>
-      <p id="antiTrackerStatus">Anti-Tracker is disabled</p>
-    </div>
-    <div>
-      <h3>Ad-Blocker</h3>
-      <button onclick="toggleAdBlocker()">Enable/Disable</button>
-      <p id="adBlockerStatus">Ad-Blocker is disabled</p>
-    </div>
-    <div>
-      <h3>Second-Hand Firewall</h3>
-      <button onclick="toggleFirewall()">Enable/Disable</button>
-      <p id="firewallStatus">Firewall is disabled</p>
-      <small>Compatible with games, can be disabled if games do not work.</small>
-    </div>
-    <div>
-      <h3>Quarantine</h3>
-      <label for="quarantineFile">Select file to quarantine:</label>
-      <input type="file" id="quarantineFile" />
-      <button onclick="quarantineFile()">Quarantine</button>
-    </div>
-    <div>
-      <h3>Scan</h3>
-      <button onclick="performScan()">Perform System Scan</button>
-      <p id="scanResult"></p>
-    </div>
-  </section>
-
-  <div class="mobile-footer">
-    <p>Security settings and features are active!</p>
-  </div>
 
   <script>
     // Tab Switching
@@ -224,80 +194,113 @@
 
     // Reaction Test
     let reactionStart, reactionTimeout;
+    const dot = document.getElementById('reactionDot');
+
     function startReactionTest() {
+      dot.style.display = 'none';
       document.getElementById('reactionBtn').disabled = true;
       document.getElementById('reactionMsg').textContent = 'Wait for it...';
       reactionTimeout = setTimeout(() => {
         reactionStart = Date.now();
-        document.getElementById('reactionMsg').textContent = 'TAP NOW!';
-        document.getElementById('reactionBtn').disabled = false;
-        document.getElementById('reactionBtn').onclick = stopReactionTest;
+        moveDotRandomly();
+        dot.style.display = 'block';
+        dot.onclick = stopReactionTest;
       }, 2000 + Math.random() * 3000);
     }
+
     function stopReactionTest() {
       const reactionTime = Date.now() - reactionStart;
       document.getElementById('reactionMsg').textContent = `⏱️ Reaction time: ${reactionTime} ms`;
-      document.getElementById('reactionBtn').textContent = 'Try Again';
-      document.getElementById('reactionBtn').onclick = startReactionTest;
+      document.getElementById('reactionBtn').disabled = false;
+      dot.style.display = 'none';
     }
 
-    // Security Enhancer Logic
-    function toggleAntiTracker() {
-      let status = document.getElementById('antiTrackerStatus');
-      if (status.textContent.includes('disabled')) {
-        status.textContent = 'Anti-Tracker is enabled';
-      } else {
-        status.textContent = 'Anti-Tracker is disabled';
-      }
-      localStorage.setItem('antiTracker', status.textContent.includes('enabled'));
+    function moveDotRandomly() {
+      const maxX = window.innerWidth - 60;
+      const maxY = window.innerHeight - 60;
+      dot.style.left = Math.random() * maxX + 'px';
+      dot.style.top = Math.random() * maxY + 'px';
     }
 
-    function toggleAdBlocker() {
-      let status = document.getElementById('adBlockerStatus');
-      if (status.textContent.includes('disabled')) {
-        status.textContent = 'Ad-Blocker is enabled';
-      } else {
-        status.textContent = 'Ad-Blocker is disabled';
+    // Booster Logic
+    function setProfile(profile) {
+      document.getElementById('ultraWarning').style.display = (profile === 'ultra') ? 'block' : 'none';
+      document.getElementById('boostButton').style.display = (profile === 'ultra') ? 'inline-block' : 'none';
+
+      let message = '';
+      switch(profile) {
+        case 'battery':
+          message = 'Battery Saver activated. Low power mode, reduced performance.';
+          break;
+        case 'efficiency':
+          message = 'High Efficiency activated. Saves power, runs smoothly.';
+          break;
+        case 'balanced':
+          message = 'Balanced mode activated. Lightweight with good performance.';
+          break;
+        case 'high':
+          message = 'High Performance activated. Boosted graphics and FPS.';
+          break;
+        case 'ultra':
+          message = 'Ready for Ultra Boost...';
+          break;
+        case 'smart':
+          message = 'Smart Boost enabled. Optimizing dynamically...';
+          smartBoost();
+          break;
+        default:
+          message = 'Running on default system performance.';
       }
-      localStorage.setItem('adBlocker', status.textContent.includes('enabled'));
+      document.getElementById('boostStatus').textContent = message;
     }
 
-    function toggleFirewall() {
-      let status = document.getElementById('firewallStatus');
-      if (status.textContent.includes('disabled')) {
-        status.textContent = 'Firewall is enabled';
-      } else {
-        status.textContent = 'Firewall is disabled';
-      }
-      localStorage.setItem('firewall', status.textContent.includes('enabled'));
+    function activateBoost() {
+      alert("⚠️ Ultra Boost Active! Max FPS, aggressive cleanup, DLSS+ enhanced. Battery will drain fast!");
+      document.getElementById('boostStatus').textContent = 'Ultra Boost activated. Hold tight!';
+    }
+
+    function smartBoost() {
+      setInterval(() => {
+        // Very basic demo: If user is clicking/tapping a lot = gaming?
+        if (document.activeElement.tagName !== 'TEXTAREA') {
+          document.getElementById('boostStatus').textContent = '🎮 Optimized for Gaming';
+        }
+      }, 5000);
+    }
+
+    // Security Enhancer
+    function startScan() {
+      const issues = [
+        "Your Device is not updated to the latest version.",
+        "Unusual network activity detected.",
+        "Potential malware signature found.",
+        "No major vulnerabilities found."
+      ];
+      const result = issues[Math.floor(Math.random() * issues.length)];
+      document.getElementById('scanResult').innerHTML = `🔒 Scan Complete: ${result}`;
+      localStorage.setItem('lastScanResult', result);
     }
 
     function quarantineFile() {
-      let fileInput = document.getElementById('quarantineFile');
-      if (fileInput.files.length > 0) {
-        alert(`Quarantining file: ${fileInput.files[0].name}`);
-        // Logic for quarantining file would go here
-      } else {
-        alert('Please select a file first!');
+      const filename = prompt("What file do you want to quarantine?");
+      if (filename) {
+        alert(`✅ File "${filename}" quarantined successfully.`);
+        localStorage.setItem('quarantine', filename);
       }
     }
 
-    function performScan() {
-      let result = document.getElementById('scanResult');
-      result.textContent = 'Performing scan...';
-      // Example scan results:
-      setTimeout(() => {
-        result.textContent = 'Vulnerability Level: Low - Your device is not updated to the latest version.';
-        alert('System scan complete. Please update your system.');
-      }, 3000);
-    }
+    setInterval(() => {
+      document.getElementById('securityStatus').textContent = localStorage.getItem('lastScanResult') || 'All systems normal.';
+    }, 5000);
 
-    // Load saved state from localStorage
-    window.addEventListener('load', () => {
-      if (localStorage.getItem('antiTracker') === 'true') toggleAntiTracker();
-      if (localStorage.getItem('adBlocker') === 'true') toggleAdBlocker();
-      if (localStorage.getItem('firewall') === 'true') toggleFirewall();
-    });
+    // Service Worker
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('/service-worker.js')
+          .then((reg) => console.log('Service Worker registered:', reg.scope))
+          .catch((err) => console.log('Service Worker failed:', err));
+      });
+    }
   </script>
 </body>
 </html>

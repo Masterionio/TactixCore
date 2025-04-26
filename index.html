@@ -23,6 +23,7 @@
       justify-content: space-around;
       background: #222;
       border-top: 2px solid #444;
+      flex-wrap: wrap;
     }
     nav button {
       flex: 1;
@@ -53,6 +54,22 @@
     .warning {
       color: red;
       font-weight: bold;
+    }
+    .mobile-footer {
+      display: none;
+      position: fixed;
+      bottom: 10px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: #222;
+      color: white;
+      padding: 0.5rem;
+      border-radius: 10px;
+    }
+    @media (max-width: 768px) {
+      .mobile-footer {
+        display: block;
+      }
     }
   </style>
 </head>
@@ -144,6 +161,10 @@
       <p id="scanResult"></p>
     </div>
   </section>
+
+  <div class="mobile-footer">
+    <p>Security settings and features are active!</p>
+  </div>
 
   <script>
     // Tab Switching
@@ -266,7 +287,7 @@
       result.textContent = 'Performing scan...';
       // Example scan results:
       setTimeout(() => {
-        result.textContent = 'Vulnerability Level: Low - Your PC is not updated to the latest version.';
+        result.textContent = 'Vulnerability Level: Low - Your device is not updated to the latest version.';
         alert('System scan complete. Please update your system.');
       }, 3000);
     }

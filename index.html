@@ -23,9 +23,10 @@
       justify-content: space-around;
       background: #222;
       border-top: 2px solid #444;
+      flex-wrap: wrap;
     }
     nav button {
-      flex: 1;
+      flex: 1 1 20%;
       padding: 1rem;
       background: #222;
       border: none;
@@ -54,21 +55,21 @@
       color: red;
       font-weight: bold;
     }
+    .toggle {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin: 1rem 0;
+    }
+    .toggle input {
+      transform: scale(1.5);
+    }
     #notesBox {
       height: 200px;
-      background: black;
+      background: #000;
       color: white;
       padding: 1rem;
-      font-size: 1rem;
-    }
-    #reactionDot {
-      position: absolute;
-      width: 50px;
-      height: 50px;
-      background: white;
-      border-radius: 12px;
-      display: none;
-      z-index: 9999;
+      resize: vertical;
     }
   </style>
 </head>
@@ -81,6 +82,7 @@
     <button onclick="showTab('boost')">Boost</button>
     <button onclick="showTab('notes')">Notes</button>
     <button onclick="showTab('reaction')">Reaction</button>
+    <button onclick="showTab('security')">Security</button>
   </nav>
 
   <section id="home" class="active">
@@ -126,12 +128,21 @@
   <section id="reaction">
     <h2>Reaction Test</h2>
     <p id="reactionMsg">Tap to start!</p>
+    <div id="dot" style="display:none; width:40px; height:40px; background:white; border-radius:10px; position:absolute;"></div>
     <button id="reactionBtn" onclick="startReactionTest()">Start</button>
-    <div id="reactionDot" onclick="stopReactionTest()"></div>
+  </section>
+
+  <section id="security">
+    <h2>Security Enhancer 🔐</h2>
+    <div class="toggle"><label>Anti-Tracker</label><input type="checkbox" id="toggleTracker" /></div>
+    <div class="toggle"><label>Ad-Blocker</label><input type="checkbox" id="toggleAdBlock" /></div>
+    <div class="toggle"><label>Second-Hand Firewall (Game-Friendly)</label><input type="checkbox" id="toggleFirewall" checked /></div>
+    <div class="toggle"><label>Virus Detection & Auto Delete</label><input type="checkbox" id="toggleVirus" /></div>
+    <div class="toggle"><label>Malware Remediation</label><input type="checkbox" id="toggleMalware" /></div>
+    <p style="font-size: 0.9rem; opacity: 0.7;">All tools are passive until threats are detected. Designed for lightweight game compatibility.</p>
   </section>
 
   <script>
-    // Tab Switching
     function showTab(id) {
       document.querySelectorAll('section').forEach(s => s.classList.remove('active'));
       document.querySelectorAll('nav button').forEach(b => b.classList.remove('active'));
@@ -139,7 +150,7 @@
       event.target.classList.add('active');
     }
 
-    // Timer Logic
+    // Timer
     const range = document.getElementById('timerRange');
     const label = document.getElementById('timerLabel');
     const display = document.getElementById('timerDisplay');
@@ -186,63 +197,47 @@
       notesBox.value = localStorage.getItem('gameNotes') || '';
     });
 
-    // Reaction Test with Dot
-    const dot = document.getElementById('reactionDot');
+    // Reaction
     let reactionStart, reactionTimeout;
-
+    const dot = document.getElementById('dot');
     function startReactionTest() {
-      document.getElementById('reactionMsg').textContent = 'Wait for it...';
       document.getElementById('reactionBtn').disabled = true;
+      document.getElementById('reactionMsg').textContent = 'Wait for it...';
       dot.style.display = 'none';
-
       reactionTimeout = setTimeout(() => {
         const x = Math.random() * (window.innerWidth - 60);
-        const y = Math.random() * (window.innerHeight - 60);
+        const y = Math.random() * (window.innerHeight - 160);
         dot.style.left = `${x}px`;
         dot.style.top = `${y}px`;
         dot.style.display = 'block';
         reactionStart = Date.now();
-      }, 2000 + Math.random() * 3000);
+      }, 2000 + Math.random() * 2000);
     }
 
-    function stopReactionTest() {
+    dot.onclick = () => {
       const reactionTime = Date.now() - reactionStart;
-      dot.style.display = 'none';
       document.getElementById('reactionMsg').textContent = `⏱️ Reaction time: ${reactionTime} ms`;
-      document.getElementById('reactionBtn').textContent = 'Try Again';
+      dot.style.display = 'none';
       document.getElementById('reactionBtn').disabled = false;
-    }
+    };
 
-    // Booster Logic
+    // Booster
     function setProfile(profile) {
       document.getElementById('ultraWarning').style.display = (profile === 'ultra') ? 'block' : 'none';
       document.getElementById('boostButton').style.display = (profile === 'ultra') ? 'inline-block' : 'none';
 
-      let message = '';
-      switch(profile) {
-        case 'battery':
-          message = 'Battery Saver activated. Low power mode, reduced performance.';
-          break;
-        case 'efficiency':
-          message = 'High Efficiency activated. Saves power, runs smoothly.';
-          break;
-        case 'balanced':
-          message = 'Balanced mode activated. Lightweight with good performance.';
-          break;
-        case 'high':
-          message = 'High Performance activated. Boosted graphics and FPS.';
-          break;
-        case 'ultra':
-          message = 'Ready for Ultra Boost...';
-          break;
-        case 'auto':
-          message = 'Automatic mode enabled. Optimizing every 5 minutes...';
-          autoOptimize();
-          break;
-        default:
-          message = 'Running on default system performance.';
-      }
+      let message = {
+        battery: 'Battery Saver activated.',
+        efficiency: 'High Efficiency activated.',
+        balanced: 'Balanced mode activated.',
+        high: 'High Performance activated.',
+        ultra: 'Ready for Ultra Boost...',
+        auto: 'Automatic mode enabled.',
+        none: 'Running on default system performance.'
+      }[profile] || 'Default mode active.';
       document.getElementById('boostStatus').textContent = message;
+
+      if (profile === 'auto') autoOptimize();
     }
 
     function activateBoost() {
@@ -251,19 +246,10 @@
     }
 
     function autoOptimize() {
-      setInterval(() => {
-        setProfile('balanced');
-      }, 300000); // every 5 minutes
+      setInterval(() => setProfile('balanced'), 300000);
     }
 
-    // Service Worker
-    if ('serviceWorker' in navigator) {
-      window.addEventListener('load', () => {
-        navigator.serviceWorker.register('/service-worker.js')
-          .then((reg) => console.log('Service Worker registered:', reg.scope))
-          .catch((err) => console.log('Service Worker failed:', err));
-      });
-    }
+    // Future: Hook Security Enhancer toggles to backend or in-app protections
   </script>
 </body>
 </html>

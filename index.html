@@ -23,10 +23,9 @@
       justify-content: space-around;
       background: #222;
       border-top: 2px solid #444;
-      flex-wrap: wrap;
     }
     nav button {
-      flex: 1 1 20%;
+      flex: 1;
       padding: 1rem;
       background: #222;
       border: none;
@@ -43,7 +42,7 @@
     section.active {
       display: block;
     }
-    textarea, select, input[type="range"] {
+    textarea, select, input[type="range"], input[type="file"] {
       width: 100%;
       margin-top: 1rem;
     }
@@ -54,22 +53,6 @@
     .warning {
       color: red;
       font-weight: bold;
-    }
-    .toggle {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin: 1rem 0;
-    }
-    .toggle input {
-      transform: scale(1.5);
-    }
-    #notesBox {
-      height: 200px;
-      background: #000;
-      color: white;
-      padding: 1rem;
-      resize: vertical;
     }
   </style>
 </head>
@@ -128,21 +111,42 @@
   <section id="reaction">
     <h2>Reaction Test</h2>
     <p id="reactionMsg">Tap to start!</p>
-    <div id="dot" style="display:none; width:40px; height:40px; background:white; border-radius:10px; position:absolute;"></div>
     <button id="reactionBtn" onclick="startReactionTest()">Start</button>
   </section>
 
   <section id="security">
-    <h2>Security Enhancer 🔐</h2>
-    <div class="toggle"><label>Anti-Tracker</label><input type="checkbox" id="toggleTracker" /></div>
-    <div class="toggle"><label>Ad-Blocker</label><input type="checkbox" id="toggleAdBlock" /></div>
-    <div class="toggle"><label>Second-Hand Firewall (Game-Friendly)</label><input type="checkbox" id="toggleFirewall" checked /></div>
-    <div class="toggle"><label>Virus Detection & Auto Delete</label><input type="checkbox" id="toggleVirus" /></div>
-    <div class="toggle"><label>Malware Remediation</label><input type="checkbox" id="toggleMalware" /></div>
-    <p style="font-size: 0.9rem; opacity: 0.7;">All tools are passive until threats are detected. Designed for lightweight game compatibility.</p>
+    <h2>Security Enhancer</h2>
+    <div>
+      <h3>Anti-Tracker</h3>
+      <button onclick="toggleAntiTracker()">Enable/Disable</button>
+      <p id="antiTrackerStatus">Anti-Tracker is disabled</p>
+    </div>
+    <div>
+      <h3>Ad-Blocker</h3>
+      <button onclick="toggleAdBlocker()">Enable/Disable</button>
+      <p id="adBlockerStatus">Ad-Blocker is disabled</p>
+    </div>
+    <div>
+      <h3>Second-Hand Firewall</h3>
+      <button onclick="toggleFirewall()">Enable/Disable</button>
+      <p id="firewallStatus">Firewall is disabled</p>
+      <small>Compatible with games, can be disabled if games do not work.</small>
+    </div>
+    <div>
+      <h3>Quarantine</h3>
+      <label for="quarantineFile">Select file to quarantine:</label>
+      <input type="file" id="quarantineFile" />
+      <button onclick="quarantineFile()">Quarantine</button>
+    </div>
+    <div>
+      <h3>Scan</h3>
+      <button onclick="performScan()">Perform System Scan</button>
+      <p id="scanResult"></p>
+    </div>
   </section>
 
   <script>
+    // Tab Switching
     function showTab(id) {
       document.querySelectorAll('section').forEach(s => s.classList.remove('active'));
       document.querySelectorAll('nav button').forEach(b => b.classList.remove('active'));
@@ -150,7 +154,7 @@
       event.target.classList.add('active');
     }
 
-    // Timer
+    // Timer Logic
     const range = document.getElementById('timerRange');
     const label = document.getElementById('timerLabel');
     const display = document.getElementById('timerDisplay');
@@ -197,59 +201,82 @@
       notesBox.value = localStorage.getItem('gameNotes') || '';
     });
 
-    // Reaction
+    // Reaction Test
     let reactionStart, reactionTimeout;
-    const dot = document.getElementById('dot');
     function startReactionTest() {
       document.getElementById('reactionBtn').disabled = true;
       document.getElementById('reactionMsg').textContent = 'Wait for it...';
-      dot.style.display = 'none';
       reactionTimeout = setTimeout(() => {
-        const x = Math.random() * (window.innerWidth - 60);
-        const y = Math.random() * (window.innerHeight - 160);
-        dot.style.left = `${x}px`;
-        dot.style.top = `${y}px`;
-        dot.style.display = 'block';
         reactionStart = Date.now();
-      }, 2000 + Math.random() * 2000);
+        document.getElementById('reactionMsg').textContent = 'TAP NOW!';
+        document.getElementById('reactionBtn').disabled = false;
+        document.getElementById('reactionBtn').onclick = stopReactionTest;
+      }, 2000 + Math.random() * 3000);
     }
-
-    dot.onclick = () => {
+    function stopReactionTest() {
       const reactionTime = Date.now() - reactionStart;
       document.getElementById('reactionMsg').textContent = `⏱️ Reaction time: ${reactionTime} ms`;
-      dot.style.display = 'none';
-      document.getElementById('reactionBtn').disabled = false;
-    };
-
-    // Booster
-    function setProfile(profile) {
-      document.getElementById('ultraWarning').style.display = (profile === 'ultra') ? 'block' : 'none';
-      document.getElementById('boostButton').style.display = (profile === 'ultra') ? 'inline-block' : 'none';
-
-      let message = {
-        battery: 'Battery Saver activated.',
-        efficiency: 'High Efficiency activated.',
-        balanced: 'Balanced mode activated.',
-        high: 'High Performance activated.',
-        ultra: 'Ready for Ultra Boost...',
-        auto: 'Automatic mode enabled.',
-        none: 'Running on default system performance.'
-      }[profile] || 'Default mode active.';
-      document.getElementById('boostStatus').textContent = message;
-
-      if (profile === 'auto') autoOptimize();
+      document.getElementById('reactionBtn').textContent = 'Try Again';
+      document.getElementById('reactionBtn').onclick = startReactionTest;
     }
 
-    function activateBoost() {
-      alert("⚠️ Ultra Boost Active! Max FPS, aggressive cleanup, DLSS+ enhanced. Battery will drain fast!");
-      document.getElementById('boostStatus').textContent = 'Ultra Boost activated. Hold tight!';
+    // Security Enhancer Logic
+    function toggleAntiTracker() {
+      let status = document.getElementById('antiTrackerStatus');
+      if (status.textContent.includes('disabled')) {
+        status.textContent = 'Anti-Tracker is enabled';
+      } else {
+        status.textContent = 'Anti-Tracker is disabled';
+      }
+      localStorage.setItem('antiTracker', status.textContent.includes('enabled'));
     }
 
-    function autoOptimize() {
-      setInterval(() => setProfile('balanced'), 300000);
+    function toggleAdBlocker() {
+      let status = document.getElementById('adBlockerStatus');
+      if (status.textContent.includes('disabled')) {
+        status.textContent = 'Ad-Blocker is enabled';
+      } else {
+        status.textContent = 'Ad-Blocker is disabled';
+      }
+      localStorage.setItem('adBlocker', status.textContent.includes('enabled'));
     }
 
-    // Future: Hook Security Enhancer toggles to backend or in-app protections
+    function toggleFirewall() {
+      let status = document.getElementById('firewallStatus');
+      if (status.textContent.includes('disabled')) {
+        status.textContent = 'Firewall is enabled';
+      } else {
+        status.textContent = 'Firewall is disabled';
+      }
+      localStorage.setItem('firewall', status.textContent.includes('enabled'));
+    }
+
+    function quarantineFile() {
+      let fileInput = document.getElementById('quarantineFile');
+      if (fileInput.files.length > 0) {
+        alert(`Quarantining file: ${fileInput.files[0].name}`);
+        // Logic for quarantining file would go here
+      } else {
+        alert('Please select a file first!');
+      }
+    }
+
+    function performScan() {
+      let result = document.getElementById('scanResult');
+      result.textContent = 'Performing scan...';
+      // Example scan results:
+      setTimeout(() => {
+        result.textContent = 'Vulnerability Level: Low - Your PC is not updated to the latest version.';
+        alert('System scan complete. Please update your system.');
+      }, 3000);
+    }
+
+    // Load saved state from localStorage
+    window.addEventListener('load', () => {
+      if (localStorage.getItem('antiTracker') === 'true') toggleAntiTracker();
+      if (localStorage.getItem('adBlocker') === 'true') toggleAdBlocker();
+      if (localStorage.getItem('firewall') === 'true') toggleFirewall();
+    });
   </script>
 </body>
 </html>

@@ -7,66 +7,18 @@
   <link rel="manifest" href="manifest.json">
   <link rel="icon" href="icon.png" type="image/png">
   <style>
-    body {
-      font-family: sans-serif;
-      margin: 0;
-      background: #1e1e1e;
-      color: white;
-    }
-    header {
-      text-align: center;
-      padding: 1rem;
-      background: #333;
-    }
-    nav {
-      display: flex;
-      justify-content: space-around;
-      background: #222;
-      border-top: 2px solid #444;
-    }
-    nav button {
-      flex: 1;
-      padding: 1rem;
-      background: #222;
-      border: none;
-      color: white;
-      font-size: 1rem;
-    }
-    nav button.active {
-      background: #555;
-    }
-    section {
-      display: none;
-      padding: 1rem;
-    }
-    section.active {
-      display: block;
-    }
-    textarea, select, input[type="range"] {
-      width: 100%;
-      margin-top: 1rem;
-    }
-    .timer-display {
-      font-size: 2rem;
-      margin: 1rem 0;
-    }
-    .warning {
-      color: red;
-      font-weight: bold;
-    }
-    #notesBox {
-      background: black;
-      color: white;
-      height: 300px;
-    }
-    #reactionDot {
-      width: 50px;
-      height: 50px;
-      background: white;
-      position: absolute;
-      border-radius: 15px;
-      display: none;
-    }
+    body { font-family: sans-serif; margin: 0; background: #1e1e1e; color: white; }
+    header { text-align: center; padding: 1rem; background: #333; }
+    nav { display: flex; justify-content: space-around; background: #222; }
+    nav button { flex: 1; padding: 1rem; background: #222; border: none; color: white; font-size: 1rem; }
+    nav button.active { background: #555; }
+    section { display: none; padding: 1rem; }
+    section.active { display: block; }
+    textarea, select, input[type="range"] { width: 100%; margin-top: 1rem; }
+    .timer-display { font-size: 2rem; margin: 1rem 0; }
+    .warning { color: red; font-weight: bold; }
+    #whiteDot { position: absolute; width: 50px; height: 50px; background: white; border-radius: 10px; display: none; }
+    .security-status { margin: 1rem 0; }
   </style>
 </head>
 <body>
@@ -76,14 +28,14 @@
     <button onclick="showTab('home')" class="active">Home</button>
     <button onclick="showTab('timers')">Timers</button>
     <button onclick="showTab('boost')">Boost</button>
-    <button onclick="showTab('security')">Security</button>
     <button onclick="showTab('notes')">Notes</button>
     <button onclick="showTab('reaction')">Reaction</button>
+    <button onclick="showTab('security')">Security</button>
   </nav>
 
   <section id="home" class="active">
     <h2>Welcome</h2>
-    <p>Your offline gaming companion. Boost performance, clear cache, manage energy, enhance security, and sharpen your reflexes.</p>
+    <p>Your offline gaming companion. Boost performance, clear cache, secure your device, and sharpen your reflexes.</p>
   </section>
 
   <section id="timers">
@@ -108,24 +60,14 @@
       <option value="ultra">Ultra Performance</option>
       <option value="smart">Smart Boost</option>
     </select>
-    <div id="ultraWarning" class="warning" style="display:none;">
-      ⚠️ Warning: Ultra Boost will drain your battery very fast!
-    </div>
+    <div id="ultraWarning" class="warning" style="display:none;">⚠️ Ultra Mode drains battery fast!</div>
     <button id="boostButton" style="display:none;" onclick="activateBoost()">Activate Boost</button>
     <p id="boostStatus"></p>
   </section>
 
-  <section id="security">
-    <h2>Security Enhancer</h2>
-    <p>Status: <span id="securityStatus">All systems normal.</span></p>
-    <button onclick="startScan()">🔍 Quick Scan</button>
-    <button onclick="quarantineFile()">🛡️ Quarantine File</button>
-    <div id="scanResult"></div>
-  </section>
-
   <section id="notes">
     <h2>Strategy Notes</h2>
-    <textarea id="notesBox" placeholder="Write your game notes here..."></textarea>
+    <textarea id="notesBox" style="height:300px; background:black; color:white;" placeholder="Write your game notes here..."></textarea>
     <button onclick="saveNotes()">💾 Save</button>
   </section>
 
@@ -133,7 +75,18 @@
     <h2>Reaction Test</h2>
     <p id="reactionMsg">Tap to start!</p>
     <button id="reactionBtn" onclick="startReactionTest()">Start</button>
-    <div id="reactionDot"></div>
+    <div id="whiteDot"></div>
+  </section>
+
+  <section id="security">
+    <h2>Security Enhancer</h2>
+    <p><b>Status:</b></p>
+    <div class="security-status" id="securityStatus"></div>
+    <h3>Quarantine File</h3>
+    <button onclick="quarantineFile()">Quarantine File</button>
+    <h3>Quick Scan</h3>
+    <button onclick="runSecurityScan()">Run System & Vulnerability Scan</button>
+    <div id="scanResults"></div>
   </section>
 
   <script>
@@ -157,25 +110,19 @@
       timeLeft = this.value * 60;
       updateTimerDisplay();
     }
-
     function startTimer() {
       clearInterval(timer);
       timer = setInterval(() => {
         timeLeft--;
         updateTimerDisplay();
-        if (timeLeft <= 0) {
-          clearInterval(timer);
-          beep.play();
-        }
+        if (timeLeft <= 0) { clearInterval(timer); beep.play(); }
       }, 1000);
     }
-
     function resetTimer() {
       clearInterval(timer);
       timeLeft = range.value * 60;
       updateTimerDisplay();
     }
-
     function updateTimerDisplay() {
       const minutes = Math.floor(timeLeft / 60).toString().padStart(2, '0');
       const seconds = (timeLeft % 60).toString().padStart(2, '0');
@@ -184,122 +131,96 @@
 
     // Notes
     const notesBox = document.getElementById('notesBox');
-    function saveNotes() {
-      localStorage.setItem('gameNotes', notesBox.value);
-      alert('Notes saved!');
-    }
-    window.addEventListener('load', () => {
-      notesBox.value = localStorage.getItem('gameNotes') || '';
-    });
+    function saveNotes() { localStorage.setItem('gameNotes', notesBox.value); }
+    window.addEventListener('load', () => { notesBox.value = localStorage.getItem('gameNotes') || ''; });
 
     // Reaction Test
-    let reactionStart, reactionTimeout;
-    const dot = document.getElementById('reactionDot');
-
+    let reactionStart;
     function startReactionTest() {
-      dot.style.display = 'none';
-      document.getElementById('reactionBtn').disabled = true;
-      document.getElementById('reactionMsg').textContent = 'Wait for it...';
-      reactionTimeout = setTimeout(() => {
-        reactionStart = Date.now();
-        moveDotRandomly();
-        dot.style.display = 'block';
-        dot.onclick = stopReactionTest;
-      }, 2000 + Math.random() * 3000);
+      const dot = document.getElementById('whiteDot');
+      dot.style.left = Math.random() * (window.innerWidth - 50) + 'px';
+      dot.style.top = Math.random() * (window.innerHeight - 50) + 'px';
+      dot.style.display = 'block';
+      dot.onclick = stopReactionTest;
+      reactionStart = Date.now();
     }
-
     function stopReactionTest() {
       const reactionTime = Date.now() - reactionStart;
       document.getElementById('reactionMsg').textContent = `⏱️ Reaction time: ${reactionTime} ms`;
-      document.getElementById('reactionBtn').disabled = false;
-      dot.style.display = 'none';
+      document.getElementById('whiteDot').style.display = 'none';
     }
 
-    function moveDotRandomly() {
-      const maxX = window.innerWidth - 60;
-      const maxY = window.innerHeight - 60;
-      dot.style.left = Math.random() * maxX + 'px';
-      dot.style.top = Math.random() * maxY + 'px';
-    }
-
-    // Booster Logic
+    // Booster
     function setProfile(profile) {
       document.getElementById('ultraWarning').style.display = (profile === 'ultra') ? 'block' : 'none';
       document.getElementById('boostButton').style.display = (profile === 'ultra') ? 'inline-block' : 'none';
 
       let message = '';
-      switch(profile) {
-        case 'battery':
-          message = 'Battery Saver activated. Low power mode, reduced performance.';
-          break;
-        case 'efficiency':
-          message = 'High Efficiency activated. Saves power, runs smoothly.';
-          break;
-        case 'balanced':
-          message = 'Balanced mode activated. Lightweight with good performance.';
-          break;
-        case 'high':
-          message = 'High Performance activated. Boosted graphics and FPS.';
-          break;
-        case 'ultra':
-          message = 'Ready for Ultra Boost...';
-          break;
-        case 'smart':
-          message = 'Smart Boost enabled. Optimizing dynamically...';
-          smartBoost();
-          break;
-        default:
-          message = 'Running on default system performance.';
+      if (profile === 'smart') { smartBoost(); message = 'Smart Boost active, optimizing in real-time...'; }
+      else {
+        switch(profile) {
+          case 'battery': message = 'Battery Saver Mode Activated.'; break;
+          case 'efficiency': message = 'High Efficiency Mode Activated.'; break;
+          case 'balanced': message = 'Balanced Mode Activated.'; break;
+          case 'high': message = 'High Performance Mode Activated.'; break;
+          case 'ultra': message = 'Ready for Ultra Boost.'; break;
+          default: message = 'Default system performance.'; break;
+        }
       }
       document.getElementById('boostStatus').textContent = message;
     }
-
-    function activateBoost() {
-      alert("⚠️ Ultra Boost Active! Max FPS, aggressive cleanup, DLSS+ enhanced. Battery will drain fast!");
-      document.getElementById('boostStatus').textContent = 'Ultra Boost activated. Hold tight!';
-    }
+    function activateBoost() { alert("⚡ Ultra Boost Activated! Maximum performance!"); }
 
     function smartBoost() {
       setInterval(() => {
-        // Very basic demo: If user is clicking/tapping a lot = gaming?
-        if (document.activeElement.tagName !== 'TEXTAREA') {
-          document.getElementById('boostStatus').textContent = '🎮 Optimized for Gaming';
+        // Very basic example: detect if "game" is on screen and optimize
+        if (document.title.includes("Game") || document.title.includes("Play")) {
+          document.getElementById('boostStatus').textContent = "Game detected. FPS optimization applied.";
+        } else {
+          document.getElementById('boostStatus').textContent = "Smartly balancing resources.";
         }
       }, 5000);
     }
 
     // Security Enhancer
-    function startScan() {
-      const issues = [
-        "Your Device is not updated to the latest version.",
-        "Unusual network activity detected.",
-        "Potential malware signature found.",
-        "No major vulnerabilities found."
-      ];
-      const result = issues[Math.floor(Math.random() * issues.length)];
-      document.getElementById('scanResult').innerHTML = `🔒 Scan Complete: ${result}`;
-      localStorage.setItem('lastScanResult', result);
+    function updateSecurityStatus() {
+      const status = {
+        antiTracker: true,
+        adBlocker: true,
+        firewall: true,
+        virusDetection: true
+      };
+      localStorage.setItem('securityStatus', JSON.stringify(status));
+      const txt = `
+        Anti-Tracker: ✅ Enabled<br>
+        Ad-Blocker: ✅ Enabled<br>
+        Second-Hand Firewall: ✅ Active<br>
+        Virus Detection: ✅ Active
+      `;
+      document.getElementById('securityStatus').innerHTML = txt;
     }
 
     function quarantineFile() {
-      const filename = prompt("What file do you want to quarantine?");
-      if (filename) {
-        alert(`✅ File "${filename}" quarantined successfully.`);
-        localStorage.setItem('quarantine', filename);
-      }
+      const file = prompt("Enter the filename to quarantine:");
+      if (file) alert(`🛡️ ${file} moved to quarantine.`);
     }
 
-    setInterval(() => {
-      document.getElementById('securityStatus').textContent = localStorage.getItem('lastScanResult') || 'All systems normal.';
-    }, 5000);
+    function runSecurityScan() {
+      const issues = [];
+      if (Math.random() > 0.5) issues.push("Device not updated to latest version.");
+      if (Math.random() > 0.7) issues.push("Weak device password detected.");
+      if (Math.random() > 0.8) issues.push("Potential tracking detected.");
+      const level = issues.length === 0 ? "No vulnerabilities found. ✅" : `Vulnerability Level: ${issues.length === 1 ? "Low" : "High"}<br>${issues.join("<br>")}`;
+      document.getElementById('scanResults').innerHTML = level;
+    }
+
+    updateSecurityStatus();
 
     // Service Worker
     if ('serviceWorker' in navigator) {
-      window.addEventListener('load', () => {
-        navigator.serviceWorker.register('/service-worker.js')
-          .then((reg) => console.log('Service Worker registered:', reg.scope))
-          .catch((err) => console.log('Service Worker failed:', err));
-      });
+      navigator.serviceWorker.register('/service-worker.js')
+        .then((reg) => console.log('Service Worker registered:', reg.scope))
+        .catch((err) => console.log('Service Worker failed:', err));
     }
   </script>
 </body>

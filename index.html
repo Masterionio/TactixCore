@@ -1,230 +1,211 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>TactixCore</title>
-<style>
-body {
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    margin: 0;
-    padding: 20px;
-    background-color: #f0f2f5;
-    color: #333;
-}
-h1, h2, h3 {
-    color: #0056b3;
-}
-button, input[type="file"] {
-    background-color: #007bff;
-    color: white;
-    border: none;
-    padding: 10px 20px;
-    margin: 5px;
-    border-radius: 8px;
-    cursor: pointer;
-    font-size: 16px;
-    transition: background-color 0.3s;
-}
-button:hover {
-    background-color: #0056b3;
-}
-.toggle-switch {
-    position: relative;
-    display: inline-block;
-    width: 60px;
-    height: 34px;
-}
-.toggle-switch input {
-    display: none;
-}
-.slider {
-    position: absolute;
-    cursor: pointer;
-    top: 0; left: 0; right: 0; bottom: 0;
-    background-color: #ccc;
-    transition: .4s;
-    border-radius: 34px;
-}
-.slider:before {
-    position: absolute;
-    content: "";
-    height: 26px; width: 26px;
-    left: 4px; bottom: 4px;
-    background-color: white;
-    transition: .4s;
-    border-radius: 50%;
-}
-input:checked + .slider {
-    background-color: #28a745;
-}
-input:checked + .slider:before {
-    transform: translateX(26px);
-}
-.section {
-    background-color: white;
-    border-radius: 12px;
-    padding: 20px;
-    margin-bottom: 20px;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-}
-#scanResults {
-    margin-top: 15px;
-}
-</style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>TactixCore</title>
+  <style>
+    body {
+      background: linear-gradient(135deg, #e0f7fa, #ffffff);
+      font-family: 'Segoe UI', sans-serif;
+      margin: 0;
+      padding: 0;
+      color: #0a3d62;
+    }
+    header {
+      background-color: #4fc3f7;
+      padding: 15px;
+      text-align: center;
+      color: white;
+      font-size: 24px;
+      font-weight: bold;
+    }
+    nav {
+      background: #81d4fa;
+      padding: 10px;
+      display: flex;
+      justify-content: center;
+      gap: 20px;
+    }
+    nav button {
+      background: #4fc3f7;
+      border: none;
+      padding: 10px 20px;
+      border-radius: 10px;
+      color: white;
+      cursor: pointer;
+      font-weight: bold;
+    }
+    nav button:hover {
+      background: #29b6f6;
+    }
+    section {
+      padding: 20px;
+    }
+    .title {
+      font-size: 20px;
+      margin-bottom: 10px;
+    }
+    .slider {
+      width: 100%;
+    }
+    .toggle {
+      margin-top: 10px;
+    }
+    #scannerScreen {
+      width: 200px;
+      height: 120px;
+      border: 3px solid #4fc3f7;
+      margin: 20px auto;
+      position: relative;
+      border-radius: 15px;
+      background: white;
+      overflow: hidden;
+    }
+    #scannerLaser {
+      width: 100%;
+      height: 4px;
+      background: lightblue;
+      position: absolute;
+      top: 0;
+      left: 0;
+      animation: scan 2s infinite alternate;
+    }
+    @keyframes scan {
+      0% { top: 0; }
+      100% { top: 100%; }
+    }
+    .summary {
+      background: #e1f5fe;
+      border-radius: 10px;
+      padding: 10px;
+      margin-top: 15px;
+    }
+    .success {
+      color: green;
+      font-weight: bold;
+    }
+    .error {
+      color: red;
+      font-weight: bold;
+    }
+  </style>
 </head>
 
 <body>
 
-<h1>TactixCore</h1>
+<header>TactixCore</header>
+<nav>
+  <button onclick="showSection('boost')">Boost</button>
+  <button onclick="showSection('security')">Security</button>
+  <button onclick="showSection('notes')">Notes</button>
+</nav>
 
-<!-- Booster Section -->
-<div class="section">
-    <h2>Core Booster</h2>
-    <button onclick="smartBoost()">Smart Boost</button>
-</div>
+<section id="boost" style="display:block;">
+  <div class="title">Smart Boost Settings</div>
+  <label>Cache Clear Aggressiveness (1-10):</label>
+  <input type="range" min="1" max="10" value="5" class="slider" id="cacheClear">
+  
+  <label>Graphics Boost Strength:</label>
+  <input type="range" min="1" max="10" value="5" class="slider" id="graphicsBoost">
+  
+  <label>Framerate Boost Strength:</label>
+  <input type="range" min="1" max="10" value="5" class="slider" id="fpsBoost">
+  
+  <label>Battery Saver:</label>
+  <input type="checkbox" id="batterySaver" class="toggle">
+  
+  <label>Frame Interpolation (Smoothness):</label>
+  <input type="range" min="1" max="10" value="5" class="slider" id="frameSmoothness">
+  
+  <label>Resolution:</label>
+  <select id="resolution">
+    <option value="1280x720">720p</option>
+    <option value="1920x1080">1080p HD</option>
+    <option value="2560x1440">1440p Smart FHD</option>
+    <option value="3200x1800">AI 2K Neo-QLED UHD</option>
+    <option value="3840x2160">AI 4K OLED Smart Crystal UHD</option>
+  </select>
+  
+  <button onclick="activateSmartBoost()">Activate Smart Boost</button>
+</section>
 
-<!-- Notes Section -->
-<div class="section">
-    <h2>Notes</h2>
-    <textarea id="notesBox" style="width:100%; height:200px; background-color:black; color:white; border-radius:8px;"></textarea>
-    <br>
-    <button onclick="saveNotes()">Save Notes</button>
-</div>
+<section id="security" style="display:none;">
+  <div class="title">Security Enhancer</div>
+  <div id="scannerScreen">
+    <div id="scannerLaser"></div>
+  </div>
+  <p id="scanStatus">Ready to scan.</p>
+  <button onclick="startSecurityScan()">Start Scan</button>
 
-<!-- Reaction Test Section -->
-<div class="section">
-    <h2>Reaction Test</h2>
-    <button onclick="startReactionTest()">Start Test</button>
-    <div id="reactionArea" style="width:100%; height:300px; background-color:#eee; position:relative; margin-top:10px; overflow:hidden;"></div>
-    <p id="reactionResult"></p>
-</div>
+  <div class="title">Security Features</div>
+  <label><input type="checkbox" id="antiTracker" checked> Anti-Tracker</label><br>
+  <label><input type="checkbox" id="adBlocker" checked> Ad-Blocker</label><br>
+  <label><input type="checkbox" id="secondFirewall" checked> Second-Hand Firewall (Lightweight)</label><br>
+  <label><input type="checkbox" id="virusDetection" checked> Virus Detection</label><br>
+  
+  <div class="summary" id="scanSummary"></div>
 
-<!-- Security Enhancer Section -->
-<div class="section">
-    <h2>Security Enhancer</h2>
+  <div class="title">Quarantine</div>
+  <input type="file" id="fileQuarantine">
+  <button onclick="quarantineFile()">Quarantine File</button>
+</section>
 
-    <label>Anti-Tracker
-        <label class="toggle-switch">
-            <input type="checkbox" id="antiTracker" onchange="saveSecuritySettings()">
-            <span class="slider"></span>
-        </label>
-    </label><br><br>
-
-    <label>Ad-Blocker
-        <label class="toggle-switch">
-            <input type="checkbox" id="adBlocker" onchange="saveSecuritySettings()">
-            <span class="slider"></span>
-        </label>
-    </label><br><br>
-
-    <label>Second-Hand Firewall
-        <label class="toggle-switch">
-            <input type="checkbox" id="firewall" onchange="saveSecuritySettings()">
-            <span class="slider"></span>
-        </label>
-    </label><br><br>
-
-    <button onclick="runSecurityScan()">Run Security Scan</button>
-    <div id="scanResults"></div>
-
-    <h3>Quarantine</h3>
-    <input type="file" id="fileQuarantine" multiple>
-</div>
+<section id="notes" style="display:none;">
+  <div class="title">Your Notes</div>
+  <textarea style="width:100%; height:300px; background:black; color:white;" placeholder="Write your notes here..."></textarea>
+</section>
 
 <script>
-// Smart Boost
-function smartBoost() {
-    // This will be smarter later
-    alert("Smart Boost: Your device has been optimized!");
+function showSection(section) {
+  document.getElementById('boost').style.display = 'none';
+  document.getElementById('security').style.display = 'none';
+  document.getElementById('notes').style.display = 'none';
+  document.getElementById(section).style.display = 'block';
 }
 
-// Notes
-function saveNotes() {
-    localStorage.setItem('notes', document.getElementById('notesBox').value);
-}
-function loadNotes() {
-    document.getElementById('notesBox').value = localStorage.getItem('notes') || "";
-}
-
-// Reaction Test
-let reactionStart = 0;
-function startReactionTest() {
-    const area = document.getElementById('reactionArea');
-    area.innerHTML = "";
-    setTimeout(() => {
-        const dot = document.createElement('div');
-        dot.style.width = "40px";
-        dot.style.height = "40px";
-        dot.style.backgroundColor = "#007bff";
-        dot.style.position = "absolute";
-        dot.style.top = Math.random() * (area.offsetHeight - 40) + "px";
-        dot.style.left = Math.random() * (area.offsetWidth - 40) + "px";
-        dot.style.borderRadius = "12px";
-        dot.style.cursor = "pointer";
-        dot.onclick = () => {
-            const time = (Date.now() - reactionStart) / 1000;
-            document.getElementById('reactionResult').innerText = `Reaction Time: ${time} seconds`;
-            area.innerHTML = "";
-        };
-        area.appendChild(dot);
-        reactionStart = Date.now();
-    }, Math.random() * 2000 + 500);
+function activateSmartBoost() {
+  const cacheLevel = document.getElementById('cacheClear').value;
+  const graphics = document.getElementById('graphicsBoost').value;
+  const fps = document.getElementById('fpsBoost').value;
+  const smoothness = document.getElementById('frameSmoothness').value;
+  const resolution = document.getElementById('resolution').value;
+  const batterySave = document.getElementById('batterySaver').checked;
+  alert(`Smart Boost activated!\nCache Clear: ${cacheLevel}\nGraphics Boost: ${graphics}\nFPS Boost: ${fps}\nSmoothness: ${smoothness}\nResolution: ${resolution}\nBattery Saving: ${batterySave}`);
 }
 
-// Security Settings Save/Load
-function saveSecuritySettings() {
-    const settings = {
-        antiTracker: document.getElementById('antiTracker').checked,
-        adBlocker: document.getElementById('adBlocker').checked,
-        firewall: document.getElementById('firewall').checked
-    };
-    localStorage.setItem('securitySettings', JSON.stringify(settings));
-}
-function loadSecuritySettings() {
-    const settings = JSON.parse(localStorage.getItem('securitySettings'));
-    if (settings) {
-        document.getElementById('antiTracker').checked = settings.antiTracker;
-        document.getElementById('adBlocker').checked = settings.adBlocker;
-        document.getElementById('firewall').checked = settings.firewall;
+function startSecurityScan() {
+  document.getElementById('scanStatus').innerText = "Scanning...";
+  setTimeout(() => {
+    const issues = [
+      { name: "System Update", found: Math.random() < 0.5 },
+      { name: "Firewall Disabled", found: Math.random() < 0.3 },
+      { name: "Antivirus Outdated", found: Math.random() < 0.4 },
+      { name: "Suspicious Activity Detected", found: Math.random() < 0.2 }
+    ];
+    let problems = issues.filter(i => i.found);
+    let summary = "";
+    problems.forEach(p => {
+      summary += `<div class="error">Issue: ${p.name}</div>`;
+    });
+    if (problems.length === 0) {
+      summary = `<div class="success">No vulnerabilities detected!</div>`;
+    } else {
+      summary += `<br><b>Recommended Actions:</b><br>Update your device, enable firewall, update antivirus, check system activity.`;
     }
+    document.getElementById('scanSummary').innerHTML = summary;
+    document.getElementById('scanStatus').innerText = "Scan complete.";
+  }, 3000);
 }
 
-// Security Scan and AutoFix
-function runSecurityScan() {
-    const scanResults = document.getElementById('scanResults');
-    scanResults.innerHTML = "Scanning...";
-    setTimeout(() => {
-        let issues = [];
-        if (Math.random() < 0.5) issues.push("Device is not updated to the latest version.");
-        if (Math.random() < 0.4) issues.push("Firewall disabled. Potential vulnerability.");
-        if (Math.random() < 0.3) issues.push("Anti-Tracking is off.");
-        if (Math.random() < 0.2) issues.push("Ad-Blocker is disabled.");
-        
-        if (issues.length === 0) {
-            scanResults.innerHTML = "<strong>Scan Complete:</strong> No issues detected.";
-        } else {
-            let summary = `<strong>Scan Complete:</strong><br><ul>`;
-            issues.forEach(issue => {
-                summary += `<li>${issue}</li>`;
-            });
-            summary += "</ul>";
-            summary += `<button onclick="autoFix()">AutoFix Issues</button>`;
-            scanResults.innerHTML = summary;
-        }
-    }, 3000);
+function quarantineFile() {
+  const fileInput = document.getElementById('fileQuarantine');
+  if (fileInput.files.length > 0) {
+    alert(`File ${fileInput.files[0].name} moved to quarantine.`);
+  } else {
+    alert('No file selected.');
+  }
 }
-
-function autoFix() {
-    alert("AutoFix: All available issues have been addressed!");
-    document.getElementById('scanResults').innerHTML = "<strong>System Secured and Updated!</strong>";
-}
-
-// Load Everything On Start
-window.onload = function() {
-    loadNotes();
-    loadSecuritySettings();
-};
 </script>
 
 </body>

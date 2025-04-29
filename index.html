@@ -71,13 +71,7 @@
             position: relative;
             width: 100%;
             height: 400px;
-            background: repeating-linear-gradient(
-                45deg,
-                #ccc,
-                #ccc 5px,
-                #f9f9f9 5px,
-                #f9f9f9 10px
-            );
+            background-color: #f9f9f9;
             border: 1px solid #ccc;
             overflow: hidden;
         }
@@ -96,6 +90,14 @@
             0%, 100% { transform: translate(-50%, -50%) translateY(0); }
             50% { transform: translate(-50%, -50%) translateY(-10px); }
         }
+        .scanner-lcd {
+            background-color: black;
+            color: lime;
+            font-family: "Courier New", Courier, monospace;
+            padding: 1rem;
+            font-size: 1.2rem;
+            margin-top: 1rem;
+        }
         .scanning-badge {
             position: absolute;
             top: 10px;
@@ -107,17 +109,42 @@
             font-size: 0.8rem;
             display: none;
         }
+        .home-container {
+            display: flex;
+            justify-content: center;
+            margin-top: 20px;
+        }
+        .home-button {
+            background-color: #007BFF;
+            color: white;
+            padding: 1rem;
+            border: none;
+            font-size: 1.2rem;
+            cursor: pointer;
+        }
     </style>
 </head>
 <body>
 
-<header>TactixCore - Basic</header>
+<header>TactixCore - Full Version</header>
 
 <nav>
+    <button onclick="showTab('home')">Home</button>
     <button onclick="showTab('boost')">Smart Boost</button>
     <button onclick="showTab('security')">Security</button>
     <button onclick="showTab('map')">Network Map</button>
 </nav>
+
+<section id="home">
+    <h2>Welcome to TactixCore</h2>
+    <div class="home-container">
+        <button class="home-button" onclick="startGameTimer()">Start Game Timer</button>
+    </div>
+    <div class="slider-container">
+        <label>Timer</label>
+        <input type="text" id="timerOutput" value="00:00" disabled>
+    </div>
+</section>
 
 <section id="boost">
     <h2>Smart Boost</h2>
@@ -154,6 +181,10 @@
             </select>
         </div>
     </div>
+    <div>
+        <button onclick="connectVPN()">Connect VPN</button>
+        <button onclick="disconnectVPN()">Disconnect VPN</button>
+    </div>
 </section>
 
 <section id="security">
@@ -171,7 +202,7 @@
 
     <h3>Scan and AutoFix</h3>
     <button onclick="startScan()">Start Scan</button>
-    <div id="scanResults" style="margin-top:1rem;"></div>
+    <div id="scanResults" class="scanner-lcd"></div>
 </section>
 
 <section id="map">
@@ -200,7 +231,7 @@
     }
 
     // Default tab
-    showTab('boost');
+    showTab('home');
 
     document.querySelectorAll('.collapsible').forEach(button => {
         button.addEventListener('click', () => {
@@ -214,7 +245,7 @@
         const badge = document.getElementById('scanningBadge');
         const results = document.getElementById('scanResults');
         badge.style.display = 'block';
-        results.innerHTML = "";
+        results.innerHTML = "Scanning...";
 
         setTimeout(() => {
             badge.style.display = 'none';
@@ -229,6 +260,24 @@
                 <p><strong>Summary:</strong> 3 issues found. Recommended actions taken automatically where possible.</p>
             `;
         }, 4000);
+    }
+
+    function connectVPN() {
+        alert('VPN Connected!');
+    }
+
+    function disconnectVPN() {
+        alert('VPN Disconnected!');
+    }
+
+    function startGameTimer() {
+        let startTime = Date.now();
+        let timerInterval = setInterval(() => {
+            let elapsedTime = Date.now() - startTime;
+            let minutes = Math.floor(elapsedTime / 60000);
+            let seconds = Math.floor((elapsedTime % 60000) / 1000);
+            document.getElementById('timerOutput').value = `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+        }, 1000);
     }
 </script>
 

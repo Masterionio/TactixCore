@@ -1,285 +1,256 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>TactixCore</title>
-    <style>
-        body {
-            margin: 0;
-            font-family: 'Segoe UI', sans-serif;
-            background-color: #f9f9f9;
-            color: #333;
-        }
-        header {
-            background-color: #007BFF;
-            color: white;
-            padding: 1rem;
-            text-align: center;
-            font-size: 1.5rem;
-        }
-        nav {
-            display: flex;
-            justify-content: center;
-            background-color: #e9ecef;
-        }
-        nav button {
-            flex: 1;
-            padding: 1rem;
-            background: none;
-            border: none;
-            font-size: 1rem;
-            cursor: pointer;
-            transition: background 0.3s;
-        }
-        nav button:hover, nav button.active {
-            background-color: #007BFF;
-            color: white;
-        }
-        section {
-            display: none;
-            padding: 2rem;
-        }
-        section.active {
-            display: block;
-        }
-        .collapsible {
-            background-color: #007BFF;
-            color: white;
-            cursor: pointer;
-            padding: 1rem;
-            border: none;
-            text-align: left;
-            outline: none;
-            font-size: 1rem;
-            width: 100%;
-        }
-        .content {
-            padding: 0 1rem;
-            display: none;
-            overflow: hidden;
-            background-color: #f1f1f1;
-        }
-        .slider-container {
-            margin: 1rem 0;
-        }
-        .slider-container label {
-            display: block;
-            margin-bottom: 0.5rem;
-        }
-        .map-container {
-            position: relative;
-            width: 100%;
-            height: 400px;
-            background-color: #f9f9f9;
-            border: 1px solid #ccc;
-            overflow: hidden;
-        }
-        .shield {
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            width: 40px;
-            height: 50px;
-            background: radial-gradient(circle at center, #00BFFF, #007BFF);
-            border-radius: 10px 10px 30px 30px;
-            transform: translate(-50%, -50%);
-            animation: float 2s infinite ease-in-out;
-        }
-        @keyframes float {
-            0%, 100% { transform: translate(-50%, -50%) translateY(0); }
-            50% { transform: translate(-50%, -50%) translateY(-10px); }
-        }
-        .scanner-lcd {
-            background-color: black;
-            color: lime;
-            font-family: "Courier New", Courier, monospace;
-            padding: 1rem;
-            font-size: 1.2rem;
-            margin-top: 1rem;
-        }
-        .scanning-badge {
-            position: absolute;
-            top: 10px;
-            right: 10px;
-            background: orange;
-            color: white;
-            padding: 0.3rem 0.7rem;
-            border-radius: 5px;
-            font-size: 0.8rem;
-            display: none;
-        }
-        .home-container {
-            display: flex;
-            justify-content: center;
-            margin-top: 20px;
-        }
-        .home-button {
-            background-color: #007BFF;
-            color: white;
-            padding: 1rem;
-            border: none;
-            font-size: 1.2rem;
-            cursor: pointer;
-        }
-    </style>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>TactixCore</title>
+  <style>
+    body {
+      margin: 0;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      display: flex;
+      height: 100vh;
+      background-color: #f2f4f8;
+    }
+    .sidebar {
+      width: 60px;
+      background-color: #0a2740;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding-top: 10px;
+      transition: width 0.3s ease;
+      overflow-x: hidden;
+    }
+    .sidebar.expanded {
+      width: 220px;
+    }
+    .toggle-btn {
+      background-color: #0a2740;
+      color: white;
+      text-align: center;
+      padding: 10px;
+      cursor: pointer;
+      font-size: 1.2em;
+    }
+    .sidebar ul {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+      width: 100%;
+    }
+    .sidebar ul li {
+      display: flex;
+      align-items: center;
+      padding: 15px;
+      transition: background 0.2s ease;
+    }
+    .sidebar ul li:hover {
+      background-color: #143d5c;
+    }
+    .sidebar ul li img {
+      width: 24px;
+      height: 24px;
+      margin-right: 10px;
+      filter: brightness(0) invert(1);
+    }
+    .sidebar ul li a {
+      color: white;
+      text-decoration: none;
+      white-space: nowrap;
+      opacity: 0;
+      transition: opacity 0.3s ease;
+    }
+    .sidebar.expanded ul li a {
+      opacity: 1;
+    }
+    .main-content {
+      flex: 1;
+      padding: 20px;
+      overflow-y: auto;
+    }
+    .section {
+      margin-bottom: 40px;
+    }
+    .section h2 {
+      margin-bottom: 10px;
+    }
+    .notes-box {
+      width: 100%;
+      height: 300px;
+      background-color: white;
+      border: 1px solid #ccc;
+      padding: 10px;
+      box-sizing: border-box;
+      resize: none;
+    }
+    .status-widget {
+      background-color: #fff;
+      border: 1px solid #ccc;
+      padding: 15px;
+      margin-bottom: 10px;
+    }
+    .slider-container {
+      display: flex;
+      align-items: center;
+      margin-bottom: 10px;
+    }
+    .slider-container label {
+      flex: 1;
+    }
+    .slider-container input[type="range"] {
+      flex: 2;
+    }
+  </style>
 </head>
 <body>
-
-<header>TactixCore - Full Version</header>
-
-<nav>
-    <button onclick="showTab('home')">Home</button>
-    <button onclick="showTab('boost')">Smart Boost</button>
-    <button onclick="showTab('security')">Security</button>
-    <button onclick="showTab('map')">Network Map</button>
-</nav>
-
-<section id="home">
-    <h2>Welcome to TactixCore</h2>
-    <div class="home-container">
-        <button class="home-button" onclick="startGameTimer()">Start Game Timer</button>
-    </div>
-    <div class="slider-container">
-        <label>Timer</label>
-        <input type="text" id="timerOutput" value="00:00" disabled>
-    </div>
-</section>
-
-<section id="boost">
-    <h2>Smart Boost</h2>
-    <button class="collapsible">Open Smart Boost Settings</button>
-    <div class="content">
-        <div class="slider-container">
-            <label>Cache Clear Aggressiveness (1-10)</label>
-            <input type="range" min="1" max="10" value="5">
-        </div>
-        <div class="slider-container">
-            <label>Graphics Boost (1-10)</label>
-            <input type="range" min="1" max="10" value="5">
-        </div>
-        <div class="slider-container">
-            <label>Framerate Boost (1-10)</label>
-            <input type="range" min="1" max="10" value="5">
-        </div>
-        <div class="slider-container">
-            <label>Frame Interpolation (1-10)</label>
-            <input type="range" min="1" max="10" value="5">
-        </div>
-        <div class="slider-container">
-            <label>Security Level (0-10)</label>
-            <input type="range" min="0" max="10" value="0">
-        </div>
-        <div class="slider-container">
-            <label>Graphics Quality</label>
-            <select>
-                <option>720p</option>
-                <option>1080p HD</option>
-                <option>1440p Smart FHD</option>
-                <option>AI 2K Neo-QLED UHD</option>
-                <option>AI 4K OLED Smart Crystal UHD</option>
-            </select>
-        </div>
-    </div>
-    <div>
-        <button onclick="connectVPN()">Connect VPN</button>
-        <button onclick="disconnectVPN()">Disconnect VPN</button>
-    </div>
-</section>
-
-<section id="security">
-    <h2>Security Enhancer</h2>
-    <p>Real-time protections:</p>
+  <div class="sidebar" id="sidebar">
+    <div class="toggle-btn" onclick="toggleSidebar()">➤</div>
     <ul>
-        <li><input type="checkbox" checked> Anti-Tracker</li>
-        <li><input type="checkbox" checked> Ad-Blocker</li>
-        <li><input type="checkbox" checked> Lightweight Firewall (Game-compatible)</li>
-        <li><input type="checkbox" checked> Auto Virus Detection (basic)</li>
+      <li><img src="icons/home.svg" alt="Home"><a href="#home">Home</a></li>
+      <li><img src="icons/boost.svg" alt="Boost"><a href="#boost">Boost</a></li>
+      <li><img src="icons/vpn.svg" alt="VPN"><a href="#vpn">VPN</a></li>
+      <li><img src="icons/security.svg" alt="Security"><a href="#security">Security</a></li>
+      <li><img src="icons/reaction.svg" alt="Reaction"><a href="#reaction">Reaction</a></li>
+      <li><img src="icons/timer.svg" alt="Timer"><a href="#timer">Timer</a></li>
+      <li><img src="icons/notes.svg" alt="Notes"><a href="#notes">Notes</a></li>
     </ul>
-
-    <h3>Quarantine</h3>
-    <p><button onclick="alert('Opening File Manager...')">Select File</button></p>
-
-    <h3>Scan and AutoFix</h3>
-    <button onclick="startScan()">Start Scan</button>
-    <div id="scanResults" class="scanner-lcd"></div>
-</section>
-
-<section id="map">
-    <h2>Network Map</h2>
-    <div class="map-container">
-        <div class="shield"></div>
-        <div class="scanning-badge" id="scanningBadge">Scanning...</div>
-    </div>
-    <ul style="margin-top:1rem;">
-        <li>Local IP: 192.168.1.1</li>
-        <li>Trackers Blocked: 150</li>
-        <li>Ads Blocked: 240</li>
-        <li>Secured Traffic: 98%</li>
-    </ul>
-</section>
-
-<script>
-    function showTab(tabName) {
-        document.querySelectorAll('section').forEach(section => {
-            section.classList.remove('active');
-        });
-        document.getElementById(tabName).classList.add('active');
-
-        document.querySelectorAll('nav button').forEach(btn => btn.classList.remove('active'));
-        document.querySelector(`nav button[onclick="showTab('${tabName}')"]`).classList.add('active');
+  </div>
+  <div class="main-content">
+    <section id="home" class="section">
+      <h2>Welcome to TactixCore</h2>
+      <div class="status-widget">
+        <p><strong>Performance Mode:</strong> Active</p>
+        <p><strong>VPN Status:</strong> Connected</p>
+        <p><strong>Smart Boost Summary:</strong> Optimized</p>
+      </div>
+    </section>
+    <section id="boost" class="section">
+      <h2>Smart Boost</h2>
+      <div class="status-widget">
+        <div class="slider-container">
+          <label for="cache">Cache Clearing:</label>
+          <input type="range" id="cache" min="0" max="100" value="50">
+        </div>
+        <div class="slider-container">
+          <label for="graphics">Graphics Boost:</label>
+          <input type="range" id="graphics" min="0" max="100" value="75">
+        </div>
+        <div class="slider-container">
+          <label for="fps">FPS Boost:</label>
+          <input type="range" id="fps" min="0" max="100" value="80">
+        </div>
+        <div class="slider-container">
+          <label for="security">Security Level:</label>
+          <input type="range" id="security" min="0" max="100" value="90">
+        </div>
+        <div class="slider-container">
+          <label for="interpolation">Frame Interpolation:</label>
+          <input type="range" id="interpolation" min="0" max="100" value="60">
+        </div>
+        <div class="slider-container">
+          <label for="quality">Graphics Quality:</label>
+          <input type="range" id="quality" min="0" max="100" value="85">
+        </div>
+        <button onclick="activateBoost()">Activate Boost</button>
+      </div>
+    </section>
+    <section id="vpn" class="section">
+      <h2>VPN</h2>
+      <div class="status-widget">
+        <p><strong>Connection:</strong> <button onclick="toggleVPN()">Disconnect</button></p>
+        <p><strong>Local IP:</strong> 192.168.1.2</p>
+        <p><strong>Protocol:</strong> WireGuard</p>
+        <p><strong>Secured Network Traffic:</strong> <span id="traffic">152.74Mb</span></p>
+      </div>
+    </section>
+    <section id="security" class="section">
+      <h2>Security</h2>
+      <div class="status-widget">
+        <p><strong>Anti-Tracker:</strong> <input type="checkbox" checked></p>
+        <p><strong>Ad Blocker:</strong> <input type="checkbox" checked></p>
+        <p><strong>Lightweight Firewall:</strong> <input type="checkbox" checked></p>
+        <p><strong>Scanner Status:</strong> No threats detected</p>
+        <button onclick="runScan()">Run Scan</button>
+      </div>
+    </section>
+    <section id="reaction" class="section">
+      <h2>Reaction Test</h2>
+      <div class="status-widget">
+        <p>Click the button as quickly as you can when it turns green.</p>
+        <button onclick="startReactionTest()">Start Test</button>
+      </div>
+    </section>
+    <section id="timer" class="section">
+      <h2>Game Timer</h2>
+      <div class="status-widget">
+        <p>Set your desired timer length:</p>
+        <input type="range" id="timerRange" min="1" max="60" value="30" oninput="updateTimerLabel(this.value)">
+        <p>Time: <span id="timerLabel">30</span> seconds</p>
+        <button onclick="startTimer()">Start Timer</button>
+      </div>
+    </section>
+    <section id="notes" class="section">
+      <h2>Notes</h2>
+      <textarea class="notes-box" id="notesBox" placeholder="Write your notes here..."></textarea>
+      <br>
+      <button onclick="saveNotes()">Save Notes</button>
+      <button onclick="loadNotes()">Load Notes</button>
+    </section>
+  </div>
+  <script>
+    function toggleSidebar() {
+      const sidebar = document.getElementById('sidebar');
+      sidebar.classList.toggle('expanded');
     }
 
-    // Default tab
-    showTab('home');
-
-    document.querySelectorAll('.collapsible').forEach(button => {
-        button.addEventListener('click', () => {
-            button.classList.toggle('active');
-            const content = button.nextElementSibling;
-            content.style.display = content.style.display === 'block' ? 'none' : 'block';
-        });
-    });
-
-    function startScan() {
-        const badge = document.getElementById('scanningBadge');
-        const results = document.getElementById('scanResults');
-        badge.style.display = 'block';
-        results.innerHTML = "Scanning...";
-
-        setTimeout(() => {
-            badge.style.display = 'none';
-            results.innerHTML = `
-                <h4>Scan Complete</h4>
-                <p>Issues Found:</p>
-                <ul>
-                    <li>System Update Recommended</li>
-                    <li>Firewall Disabled (fixed automatically)</li>
-                    <li>Privacy Settings Weak</li>
-                </ul>
-                <p><strong>Summary:</strong> 3 issues found. Recommended actions taken automatically where possible.</p>
-            `;
-        }, 4000);
+    function activateBoost() {
+      alert('Smart Boost Activated!');
     }
 
-    function connectVPN() {
-        alert('VPN Connected!');
+    function toggleVPN() {
+      const button = event.target;
+      if (button.textContent === 'Disconnect') {
+        button.textContent = 'Connect';
+        document.getElementById('traffic').textContent = '0.00Mb';
+      } else {
+        button.textContent = 'Disconnect';
+        document.getElementById('traffic').textContent = '152.74Mb';
+      }
     }
 
-    function disconnectVPN() {
-        alert('VPN Disconnected!');
+    function runScan() {
+      alert('Running Security Scan...');
     }
 
-    function startGameTimer() {
-        let startTime = Date.now();
-        let timerInterval = setInterval(() => {
-            let elapsedTime = Date.now() - startTime;
-            let minutes = Math.floor(elapsedTime / 60000);
-            let seconds = Math.floor((elapsedTime % 60000) / 1000);
-            document.getElementById('timerOutput').value = `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
-        }, 1000);
+    function startReactionTest() {
+      alert('Starting Reaction Test...');
     }
-</script>
 
+    function updateTimerLabel(value) {
+      document.getElementById('timerLabel').textContent = value;
+    }
+
+    function startTimer() {
+      const time = document.getElementById('timerRange').value;
+      alert('Timer started for ' + time + ' seconds.');
+    }
+
+    function saveNotes() {
+      const notes = document.getElementById('notesBox').value;
+      localStorage.setItem('tactixcoreNotes', notes);
+      alert('Notes saved!');
+    }
+
+    function loadNotes() {
+      const notes = localStorage.getItem('tactixcoreNotes');
+      if (notes) {
+        document.getElementById('notesBox').value = notes;
+        alert('Notes loaded!');
+      } else {
+        alert('No saved notes found.');
+      }
+    }
+  </script>
 </body>
 </html>
